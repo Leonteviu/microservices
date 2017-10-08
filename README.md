@@ -87,3 +87,30 @@
   --env COMMENT_DATABASE_HOST=comment_db_new --network-alias=comment_new leonteviu/comment:1.0 - указана переменная **COMMENT_DATABASE_HOST**, отличная от описанной в Dockerfile для comment, а также указан новый алиас, используемый в последствии для запуска контейнера ui
 - $ docker run -d --network=reddit \<br>
   --env POST_SERVICE_HOST=post_new --env COMMENT_SERVICE_HOST=comment_new -p 9292:9292 leonteviu/ui:1.0 - - указаны две переменные **POST_DATABASE_HOST** и **COMMENT_DATABASE_HOST**, отличная от описанной в Dockerfile для ui
+
+### Возможно уменьшить размер одного из наших образов, например в репозитории ui:
+
+- $ docker images - узнаем размер наших images
+- откорректируем содержимое файла **./ui/Dockerfile**, заменив **FROM** и **RUN** на:<br>
+  FROM ubuntu:16.04<br>
+  RUN apt-get update \<br>
+  && apt-get install -y ruby-full ruby-dev build-essential \<br>
+  && gem install bundler --no-ri --no-rdoc
+
+**!** В процессе сборки может появиться ошибка:<br>
+Gem::Ext::BuildError: ERROR: Failed to build gem native extension.<br>
+...................<br>
+Make sure that `gem install unf_ext -v '0.0.7.4'` succeeds before bundling.<br>
+...................<br>
+The command '/bin/sh -c bundle install' returned a non-zero code: 5<br>
+
+В этом случае необходимо **пересоздать docker-machine**, указав тип нашины **g1-small**:<br>
+
+- $ docker-machine create --driver google --google-project docker-181813 --google-zone europe-west1-b **--google-machine-type g1-small** --google-machine-image $(gcloud compute images list --filter ubuntu-1604-lts --uri) docker-host<br>
+
+**!**
+
+#### Команды:
+
+- $ docker build -t leonteviu/ui:2.0 ./ui - пересоберем ui
+- $ docker run -d --network=reddit -p 9292:9292 leonteviu/ui:2.0 - запустим контейнер
