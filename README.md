@@ -60,7 +60,7 @@
 - $ docker build -t leonteviu/post:1.0 ./post-py
 - $ docker build -t leonteviu/comment:1.0 ./comment
 - $ docker build -t leonteviu/ui:1.0 ./ui<br>
-  (сборка **ui** началась не с первого шага потому, что инструкции в Dockerfile для ui уже были выполнены (кэшировались) при сборке comment (до команды ADD Gemfile* $APP_HOME/))<br>
+  (сборка **ui** началась не с первого шага потому, что инструкции в Dockerfile для ui уже были выполнены (**кэшировались**) при сборке comment (до команды ADD Gemfile* $APP_HOME/))<br>
 
 Запуск приложения:<br>
 (Добавим сетевые алиасы контейнерам. Сетевые алиасы могут быть использованы для сетевых соединений, как доменные имена)
