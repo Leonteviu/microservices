@@ -74,3 +74,16 @@
   --network-alias=comment leonteviu/comment:1.0
 - $ docker run -d --network=reddit \<br>
   -p 9292:9292 leonteviu/ui:1.0
+- $ docker kill $(docker ps -q) - остановить контейнеры<br>
+
+**можно задать контейнерам другие сетевые алиасы и переопределить соответствующие переменные окружения при запуске новых контейнеров через docker run. Тогда наши команды будут выглядеть следующим образом:**
+
+- предварительно надо остановить контейнеры **docker kill $(docker ps -q)**
+- $ docker run -d --network=reddit \<br>
+  --network-alias=post_db_new --network-alias=comment_db_new mongo:latest - для mongo указали два алиаса **post_db_new** и **comment_db_new**, которые будут использователься переменными, описанными при старте соответствующих контейнеров post и comment
+- $ docker run -d --network=reddit \<br>
+  --env POST_DATABASE_HOST=post_db_new --network-alias=post_new leonteviu/post:1.0 - указана переменная **POST_DATABASE_HOST**, отличная от описанной в Dockerfile для post, а также указан новый алиас, используемый в последствии для запуска контейнера ui
+- $ docker run -d --network=reddit \<br>
+  --env COMMENT_DATABASE_HOST=comment_db_new --network-alias=comment_new leonteviu/comment:1.0 - указана переменная **COMMENT_DATABASE_HOST**, отличная от описанной в Dockerfile для comment, а также указан новый алиас, используемый в последствии для запуска контейнера ui
+- $ docker run -d --network=reddit \<br>
+  --env POST_SERVICE_HOST=post_new --env COMMENT_SERVICE_HOST=comment_new -p 9292:9292 leonteviu/ui:1.0 - - указаны две переменные **POST_DATABASE_HOST** и **COMMENT_DATABASE_HOST**, отличная от описанной в Dockerfile для ui
