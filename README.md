@@ -11,6 +11,12 @@
 
 # Homework 15 (branch homework-01)
 
+## План:
+
+- Создание docker host
+- Создание своего образа
+- Работа с Docker Hub
+
 - Для доступа к нашему приложению понадобиться создать правило в filewall (Название => reddit-app, Теги целевых экземпляров => docker-machine, Диапазоны IP-адресов источников => 0.0.0.0/0, ротоколы и порты => Указанные протоколы и порты => tcp:9292)
 
 ## Файлы:
@@ -66,36 +72,26 @@
 (Добавим сетевые алиасы контейнерам. Сетевые алиасы могут быть использованы для сетевых соединений, как доменные имена)
 
 - $ docker network create reddit - создать bridge-сеть для контейнеров, так как сетевые алиасы не работают в сети по-умолчанию
-- $ docker run -d --network=reddit \<br>
-  --network-alias=post_db --network-alias=comment_db mongo:latest
-- $ docker run -d --network=reddit \<br>
-  --network-alias=post leonteviu/post:1.0
-- $ docker run -d --network=reddit \<br>
-  --network-alias=comment leonteviu/comment:1.0
-- $ docker run -d --network=reddit \<br>
-  -p 9292:9292 leonteviu/ui:1.0
+- $ docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db mongo:latest
+- $ docker run -d --network=reddit --network-alias=post leonteviu/post:1.0
+- $ docker run -d --network=reddit --network-alias=comment leonteviu/comment:1.0
+- $ docker run -d --network=reddit -p 9292:9292 leonteviu/ui:1.0
 - $ docker kill $(docker ps -q) - остановить контейнеры<br>
 
 **можно задать контейнерам другие сетевые алиасы и переопределить соответствующие переменные окружения при запуске новых контейнеров через docker run. Тогда наши команды будут выглядеть следующим образом:**
 
 - предварительно надо остановить контейнеры **docker kill $(docker ps -q)**
-- $ docker run -d --network=reddit \<br>
-  --network-alias=post_db_new --network-alias=comment_db_new mongo:latest - для mongo указали два алиаса **post_db_new** и **comment_db_new**, которые будут использователься переменными, описанными при старте соответствующих контейнеров post и comment
-- $ docker run -d --network=reddit \<br>
-  --env POST_DATABASE_HOST=post_db_new --network-alias=post_new leonteviu/post:1.0 - указана переменная **POST_DATABASE_HOST**, отличная от описанной в Dockerfile для post, а также указан новый алиас, используемый в последствии для запуска контейнера ui
-- $ docker run -d --network=reddit \<br>
-  --env COMMENT_DATABASE_HOST=comment_db_new --network-alias=comment_new leonteviu/comment:1.0 - указана переменная **COMMENT_DATABASE_HOST**, отличная от описанной в Dockerfile для comment, а также указан новый алиас, используемый в последствии для запуска контейнера ui
-- $ docker run -d --network=reddit \<br>
-  --env POST_SERVICE_HOST=post_new --env COMMENT_SERVICE_HOST=comment_new -p 9292:9292 leonteviu/ui:1.0 - - указаны две переменные **POST_DATABASE_HOST** и **COMMENT_DATABASE_HOST**, отличная от описанной в Dockerfile для ui
+- $ docker run -d --network=reddit --network-alias=post_db_new --network-alias=comment_db_new mongo:latest - для mongo указали два алиаса **post_db_new** и **comment_db_new**, которые будут использователься переменными, описанными при старте соответствующих контейнеров post и comment
+- $ docker run -d --network=reddit --env POST_DATABASE_HOST=post_db_new --network-alias=post_new leonteviu/post:1.0 - указана переменная **POST_DATABASE_HOST**, отличная от описанной в Dockerfile для post, а также указан новый алиас, используемый в последствии для запуска контейнера ui
+- $ docker run -d --network=reddit --env COMMENT_DATABASE_HOST=comment_db_new --network-alias=comment_new leonteviu/comment:1.0 - указана переменная **COMMENT_DATABASE_HOST**, отличная от описанной в Dockerfile для comment, а также указан новый алиас, используемый в последствии для запуска контейнера ui
+- $ docker run -d --network=reddit --env POST_SERVICE_HOST=post_new --env COMMENT_SERVICE_HOST=comment_new -p 9292:9292 leonteviu/ui:1.0 - - указаны две переменные **POST_DATABASE_HOST** и **COMMENT_DATABASE_HOST**, отличная от описанной в Dockerfile для ui
 
 ### Возможно уменьшить размер одного из наших образов, например в репозитории ui:
 
 - $ docker images - узнаем размер наших images
 - откорректируем содержимое файла **./ui/Dockerfile**, заменив **FROM** и **RUN** на:<br>
   FROM ubuntu:16.04<br>
-  RUN apt-get update \<br>
-  && apt-get install -y ruby-full ruby-dev build-essential \<br>
-  && gem install bundler --no-ri --no-rdoc
+  RUN apt-get update && apt-get install -y ruby-full ruby-dev build-essential && gem install bundler --no-ri --no-rdoc
 
 **!** В процессе сборки может появиться ошибка:<br>
 Gem::Ext::BuildError: ERROR: Failed to build gem native extension.<br>
@@ -114,3 +110,17 @@ The command '/bin/sh -c bundle install' returned a non-zero code: 5<br>
 
 - $ docker build -t leonteviu/ui:2.0 ./ui - пересоберем ui
 - $ docker run -d --network=reddit -p 9292:9292 leonteviu/ui:2.0 - запустим контейнер
+
+### Создание docker volume и подключение к MongoDB<br>
+
+(Для того, чтобы после выключения контейнеров данные нашего приложения не терялись, используем **docker volume**)
+
+#### Команды:
+
+- $ docker volume create reddit_db - создание docker volume
+- $ docker kill $(docker ps -q) - выключили старые копии контейнеров<br>
+  Запустим новые копии контейнеров:
+- $ docker run -d --network=reddit **-v reddit_db:/data/db** --network-alias=post_db --network-alias=comment_db mongo:latest
+- $ docker run -d --network=reddit --network-alias=post leonteviu/post:1.0
+- $ docker run -d --network=reddit --network-alias=comment leonteviu/comment:1.0
+- $ docker run -d --network=reddit -p 9292:9292 leonteviu/ui:2.0
