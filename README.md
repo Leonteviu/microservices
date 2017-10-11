@@ -158,6 +158,7 @@ The command '/bin/sh -c bundle install' returned a non-zero code: 5<br>
 
 - Созданный хост в GCP с помощью docker-machine `docker-machine create --driver google --google-project docker-181813 --google-zone europe-west1-b --google-machine-type g1-small --google-machine-image $(gcloud compute images list --filter ubuntu-1604-lts --uri) docker-host`
 - Инициализировать переменные окружения для работы с docker-engine на созданной машине `eval $(docker-machine env docker-host)`
+- Установленный `docker-compose` (<https://docs.docker.com/compose/install/#install-compose>) либо `pip install docker-compose`
 
 ## План:
 
@@ -259,9 +260,17 @@ The command '/bin/sh -c bundle install' returned a non-zero code: 5<br>
 
 ## Использование docker-compose
 
+- Предварительно надо остановить все запущенные контейнеры `docker rm -f $(docker ps -a -q)` - удалит вообще все контейнеры
+
 ### Файлы
 
+- ~/microservices/docker-compose.yml
+
 ### Команды
+
+- $ export USERNAME=your-login
+- $ docker-compose up -d
+- $ docker-compose ps
 
 ## Тестирование в docker
 
