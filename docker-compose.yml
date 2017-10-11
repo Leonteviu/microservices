@@ -5,7 +5,7 @@ services:
     volumes:
       - post_db:/data/db
     networks:
-      reddit:
+      back_net:
         aliases:
           - post_db
           - comment_db
@@ -15,19 +15,38 @@ services:
     ports:
       - 9292:9292/tcp
     networks:
-      - reddit
+      - front_net
   post:
     build: ./post-py
     image: ${USERNAME}/post:1.0
     networks:
-      - reddit
+      back_net:
+        aliases:
+          - post_db
+      front_net:
+        aliases:
+          - post_db
   comment:
     build: ./ui
     image: ${USERNAME}/comment:1.0
     networks:
-      - reddit
+      back_net:
+        aliases:
+          - comment_db
+      front_net:
+        aliases:
+          - comment_db
 volumes:
   post_db:
 
 networks:
-  reddit:
+  front_net:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 10.0.1.0/24
+  back_net:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 10.0.2.0/24
