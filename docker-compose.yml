@@ -11,14 +11,14 @@ services:
           - comment_db
   ui:
     build: ./ui
-    image: ${USERNAME}/ui:1.0
+    image: ${USERNAME}/ui:${UI_VERSION}
     ports:
-      - 9292:9292/tcp
+      - ${EXTERNAL_PORT}:${CONTAINER_PORT}/${PROTOCOL}
     networks:
       - front_net
   post:
     build: ./post-py
-    image: ${USERNAME}/post:1.0
+    image: ${USERNAME}/post:${POST_VERSION}
     networks:
       back_net:
         aliases:
@@ -28,7 +28,7 @@ services:
           - post_db
   comment:
     build: ./ui
-    image: ${USERNAME}/comment:1.0
+    image: ${USERNAME}/comment:${COMMENT_VERSION}
     networks:
       back_net:
         aliases:
@@ -44,9 +44,9 @@ networks:
     driver: bridge
     ipam:
       config:
-      - subnet: 10.0.1.0/24
+      - subnet: ${FRONT_SUBNET}
   back_net:
     driver: bridge
     ipam:
       config:
-      - subnet: 10.0.2.0/24
+      - subnet: ${BACK_SUBNET}

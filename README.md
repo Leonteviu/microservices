@@ -268,9 +268,37 @@ The command '/bin/sh -c bundle install' returned a non-zero code: 5<br>
 
 ### Команды
 
+> Отметим, что docker-compose поддерживает интерполяцию(подстановку) переменных окружения. В данном случае это переменная USERNAME. Поэтому перед запуском необходимо экспортировать значения данных переменных окружения
+
 - $ export USERNAME=your-login
-- $ docker-compose up -d
+- $ docker-compose up -d - запускает полностью весь наш проект, описанный в docker-compose.yml
 - $ docker-compose ps
+
+Очистить нами созданное можно при помощи команд:<br>
+
+- $ docker rm -f $(docker ps -a -q) удаляет все контейнеры
+- $ docker network ls - отображает имеющиеся сети
+- $ docker network rm microservices_front_net -удаляет сеть microservices_front_net
+- $ docker network rm microservices_back_net
+
+#### параметризуем наш файл docker-compose.yml
+
+Описаны следующие переменные в docker-compose.yml:
+
+- CONTAINER_PORT - порт в контейнере ui
+- EXTERNAL_PORT - порт, смотрящий наружу
+- PROTOCOL - протоколы наших портов
+- POST_VERSION - версия сервиса post
+- COMMENT_VERSION - версия сервиса comment
+- UI_VERSION - версия сервиса ui
+- FRONT_SUBNET - docker сеть ui
+- BACK_SUBNET - docker сеть mongo
+
+  > post и comment сервисы находятся в обеих сетях
+
+- ~/microservices/.env - файл, содержащий значение переменных, используемых при параметризации docker-compose.yml<br>
+
+Для старта используется все та же команда `docker-compose up -d`
 
 ## Тестирование в docker
 
