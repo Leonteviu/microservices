@@ -164,11 +164,8 @@ The command '/bin/sh -c bundle install' returned a non-zero code: 5<br>
 
 - Работа с сетями в Docker
 - Использование docker-compose
-- Тестирование в docker
 
 ## Работа с сетями в Docker
-
-### Файлы
 
 ### Команды
 
@@ -186,7 +183,7 @@ The command '/bin/sh -c bundle install' returned a non-zero code: 5<br>
 
 - $ docker run --network host --rm -d --name net_test joffotron/docker-net-tools -c "sleep 100"
 - $ docker run --network host -d nginx<br>
-  если посмотреть результат команды `docker ps`, выполнив ее несколько раз, то можно увидеть, что стартован всего один контейнер `nginx:latest`. **ПОЧЕМУ???**
+  если посмотреть результат команды `docker ps`, выполнив ее несколько раз, то можно увидеть, что стартован всего один контейнер `nginx:latest`.
 
 #### Bridge network driver
 
@@ -296,12 +293,13 @@ The command '/bin/sh -c bundle install' returned a non-zero code: 5<br>
 
   > post и comment сервисы находятся в обеих сетях
 
-- ~/microservices/.env - файл, содержащий значение переменных, используемых при параметризации docker-compose.yml<br>
+- ~/microservices/.env - файл, содержащий значение переменных, используемых при параметризации `docker-compose.yml` docker-compose должен подхватить переменные из этого файла<br>
 
 Для старта используется все та же команда `docker-compose up -d`
 
-## Тестирование в docker
+====== Задание со звездочкой (COMPOSE_PROJECT_NAME)<br>
+По-умолчанию значение COMPOSE_PROJECT_NAME = имя_каталога_проекта.<br>
+Для того, чтобы задать другое базовое имя проетка, например **hw17**, есть два пути:
 
-### Файлы
-
-### Команды
+- Задать имя переменной COMPOSE_PROJECT_NAME, например `export COMPOSE_PROJECT_NAME=hw17`
+- Для поднятия наших сервисов с помощью compose файла использовать команду `docker-compose -p hw17 up -d`
