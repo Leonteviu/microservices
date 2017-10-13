@@ -138,10 +138,171 @@ The command '/bin/sh -c bundle install' returned a non-zero code: 5<br>
 - rm -rf /var/cache/apk/* - очистка кэша пакетного менеджера
 
 - ruby-full соответствует ruby
+
 - build-essential соответствует build-base
+
 - ruby-json - потребовалось доустановить пакет так как:<br>
   Образ собрался, но при запуске падал.
+
 - $ docker ps -a - посмотреть все когда-либо запускаемые контейнеры
+
 - $ docker logs container_name - вывести лог запуска контейнера, выясним почему падал при запуске (выяснилось, что причина падения - отсутствие пакета **ruby-json**)
+
 - $ docker build -t leonteviu/ui:**3.0** ./ui - билд образа на основе **Alpine linux**
+
 - $ docker run -d --network=reddit -p 9292:9292 leonteviu/ui:**3.0** - запуск
+
+# Homework 17 (branch homework-03)
+
+# Необходимо:
+
+- Созданный хост в GCP с помощью docker-machine `docker-machine create --driver google --google-project docker-181813 --google-zone europe-west1-b --google-machine-type g1-small --google-machine-image $(gcloud compute images list --filter ubuntu-1604-lts --uri) docker-host`
+- Инициализировать переменные окружения для работы с docker-engine на созданной машине `eval $(docker-machine env docker-host)`
+- Установленный `docker-compose` (<https://docs.docker.com/compose/install/#install-compose>) либо `pip install docker-compose`
+
+## План:
+
+- Работа с сетями в Docker
+- Использование docker-compose
+
+## Работа с сетями в Docker
+
+### Команды
+
+- $ docker exec -ti net_test ifconfig
+- $ docker-machine ssh docker-host ifconfig
+- $ docker kill $(docker ps -q)<br>
+
+> В качестве образа используем joffotron/docker-net-tools. Делаем это для экономии сил и времени, т.к. в его состав уже входят необходимые утилиты для работы с сетью: пакеты bind-tools, net-tools и curl.
+
+#### None network driver
+
+- $ docker run --network none --rm -d --name net_test joffotron/docker-net-tools -c "sleep 100"
+
+#### Host network driver
+
+- $ docker run --network host --rm -d --name net_test joffotron/docker-net-tools -c "sleep 100"
+- $ docker run --network host -d nginx<br>
+  если посмотреть результат команды `docker ps`, выполнив ее несколько раз, то можно увидеть, что стартован всего один контейнер `nginx:latest`.
+
+#### Bridge network driver
+
+Создадим bridge-сеть в docker<br>
+
+- $ docker network create reddit --driver bridge<br>
+  Можно запустить наши контейнеры с использованием сетевых alias:
+- $ docker run -d --network=reddit --network-alias=post_db --network-alias=comment_db mongo:latest
+- $ docker run -d --network=reddit --network-alias=post leonteviu/post:1.0
+- $ docker run -d --network=reddit --network-alias=comment leonteviu/comment:1.0
+- $ docker run -d --network=reddit -p 9292:9292 leonteviu/ui:3.0<br>
+
+> На самом деле, наши сервисы ссылаются друг на друга по dns-именам, прописанным в ENV-переменных (см Dockerfile). В текущей инсталляции встроенный DNS docker не знает ничего об этих именах.
+
+===<br>
+
+Создадим две docker сети:
+
+- $ docker network create back_net --subnet=10.0.2.0/24
+- $ docker network create front_net --subnet=10.0.1.0/24<br>
+  Запустим наши контейнеры так, чтобы в **back_net** находились **post**, **commect** и **mongo_db**, а в **front_net** - **ui**:
+- $ docker run -d --network=back_net --name mongo_db --network-alias=post_db --network-alias=comment_db mongo:latest
+- $ docker run -d --network=back_net --name post leonteviu/post:1.0
+- $ docker run -d --network=back_net --name comment leonteviu/comment:1.0
+- $ docker run -d --network=front_net -p 9292:9292 --name ui leonteviu/ui:1.0
+
+  > Docker при инициализации контейнера может подключить к нему только 1 сеть. При этом контейнеры из соседних сетей не будут доступны как в DNS, так и для взаимодействия по сети. Поэтому нужно поместить контейнеры **post** и **comment** в обе сети.
+
+Подключим дополнительные сети для post и comment:
+
+- $ docker network connect front_net post
+- $ docker network connect front_net comment<br>
+
+====== Задание со ЗВЕЗДОЧКОЙ настроим **docker-proxy**, используя Bridge network driver:<br>
+В нашей поднятой инфраструктуре остановим контейнер **ui**
+
+- $ docker ps
+- $ docker kill ui_conteiner_id
+- $ docker rm $(docker ps -a -q -f status=exited) - удалим все остановленные контейнеры (можно выбрать конкретно наш)
+- $ docker run -d --network=front_net -p 80:9292 --name ui leonteviu/ui:1.0 - пробросили наше приложение на 80 порт. Теперь оно доступно по адресу <http://docker-host_IP> (Предварительно на нашей docker-machine в GCP необходимо разрешить http)<br>
+
+Посмотрим как выглядит сетевой стек Linux в текущий момент:
+
+1. Зайти по ssh на docker-host и установите пакет bridge-utils (ссылка на gist):
+
+  - $ docker-machine ssh docker-host
+  - $ sudo apt-get update && sudo apt-get install bridge-utils
+
+2. Выполнить:
+
+  - $ docker-network ls
+  - $ ifconfig | grep br - посмотрть bridge-интерфейсы
+  - $ brctl show
+  - $ brctl show interface
+
+    > Отображаемые veth-интерфейсы - это те части виртуальных пар интерфейсов, которые лежат в сетевом пространстве хоста и также отображаются в ifconfig. Вторые их части лежат внутри контейнеров
+
+3. Посмотрим, как выглядит iptables:
+
+  - $ sudo iptables -nL -t nat
+
+    > POSTROUTING отвечают за выпуск во внешнюю сеть контейнеров из bridge-сетей
+
+    > DOCKER и правила DNAT отвечают за перенаправление трафика на адреса уже конкретных контейнеров.
+
+  - $ ps ax | grep docker-proxy
+
+    > должны увидеть хотя бы 1 запущенный процесс docker-proxy. Этот процесс в данный момент слушает сетевой tcp-порт 9292.
+
+====== Конец задания со ЗВЕЗДОЧКОЙ
+
+## Использование docker-compose
+
+- Предварительно надо остановить все запущенные контейнеры `docker rm -f $(docker ps -a -q)` - удалит вообще все контейнеры
+
+### Файлы
+
+- ~/microservices/docker-compose.yml
+
+### Команды
+
+> Отметим, что docker-compose поддерживает интерполяцию(подстановку) переменных окружения. В данном случае это переменная USERNAME. Поэтому перед запуском необходимо экспортировать значения данных переменных окружения
+
+- $ export USERNAME=your-login
+- $ docker-compose up -d - запускает полностью весь наш проект, описанный в docker-compose.yml
+- $ docker-compose ps
+
+Очистить нами созданное можно при помощи команд:<br>
+
+- $ docker rm -f $(docker ps -a -q) удаляет все контейнеры
+- $ docker network ls - отображает имеющиеся сети
+- $ docker network rm microservices_front_net -удаляет сеть microservices_front_net
+- $ docker network rm microservices_back_net
+
+#### параметризуем наш файл docker-compose.yml
+
+Описаны следующие переменные в docker-compose.yml:<br>
+Важно отметить, что так как ранее мы присвоили переменной USERNAME определенное значение `export USERNAME=your-login`, то для использования этой переменной в файле .env на необходимо убрать это значение `unset USERNAME`, `export USERNAME` перезагрузить систему.
+
+- USERNAME
+- MONGO_VER - версия mongo
+- CONTAINER_PORT - порт в контейнере ui
+- EXTERNAL_PORT - порт, смотрящий наружу
+- PROTOCOL - протоколы наших портов
+- POST_VERSION - версия сервиса post
+- COMMENT_VERSION - версия сервиса comment
+- UI_VERSION - версия сервиса ui
+- FRONT_SUBNET - docker сеть ui
+- BACK_SUBNET - docker сеть mongo
+
+  > post и comment сервисы находятся в обеих сетях
+
+- ~/microservices/.env.example - файл-шаблон (он может и не содержать значения переменных, переменные могут быть просто перечислены), содержащий значение переменных, используемых при параметризации `docker-compose.yml`. Из .env.example создается файл `~/microservices/.env`, в котором уже описываются необходимые значения переменных (`.env` добавлен в `.gitignore`). docker-compose должен подхватить переменные из этого файла `~/microservices/.env`<br>
+
+Для старта используется все та же команда `docker-compose up -d`
+
+====== Задание со звездочкой (COMPOSE_PROJECT_NAME)<br>
+По-умолчанию значение COMPOSE_PROJECT_NAME = имя_каталога_проекта.<br>
+Для того, чтобы задать другое базовое имя проетка, например **hw17**, есть два пути:
+
+- Задать имя переменной COMPOSE_PROJECT_NAME, например `export COMPOSE_PROJECT_NAME=hw17`
+- Для поднятия наших сервисов с помощью compose файла использовать команду `docker-compose -p hw17 up -d`
