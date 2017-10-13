@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   mongo_db:
-    image: mongo:3.2
+    image: mongo:${MONGO_VER}
     volumes:
       - post_db:/data/db
     networks:

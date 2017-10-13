@@ -280,8 +280,11 @@ The command '/bin/sh -c bundle install' returned a non-zero code: 5<br>
 
 #### параметризуем наш файл docker-compose.yml
 
-Описаны следующие переменные в docker-compose.yml:
+Описаны следующие переменные в docker-compose.yml:<br>
+Важно отметить, что так как ранее мы присвоили переменной USERNAME определенное значение `export USERNAME=your-login`, то для использования этой переменной в файле .env на необходимо убрать это значение `unset USERNAME`, `export USERNAME` перезагрузить систему.
 
+- USERNAME
+- MONGO_VER - версия mongo
 - CONTAINER_PORT - порт в контейнере ui
 - EXTERNAL_PORT - порт, смотрящий наружу
 - PROTOCOL - протоколы наших портов
@@ -293,7 +296,7 @@ The command '/bin/sh -c bundle install' returned a non-zero code: 5<br>
 
   > post и comment сервисы находятся в обеих сетях
 
-- ~/microservices/.env - файл, содержащий значение переменных, используемых при параметризации `docker-compose.yml` docker-compose должен подхватить переменные из этого файла<br>
+- ~/microservices/.env.example - файл-шаблон (он может и не содержать значения переменных, переменные могут быть просто перечислены), содержащий значение переменных, используемых при параметризации `docker-compose.yml`. Из .env.example создается файл `~/microservices/.env`, в котором уже описываются необходимые значения переменных (`.env` добавлен в `.gitignore`). docker-compose должен подхватить переменные из этого файла `~/microservices/.env`<br>
 
 Для старта используется все та же команда `docker-compose up -d`
 
