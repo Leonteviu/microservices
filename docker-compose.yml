@@ -55,6 +55,14 @@ services:
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
+    networks:
+      back_net:
+        aliases:
+          - node-exporter
+      front_net:
+        aliases:
+          - node-exporter
+
 
 volumes:
   post_db:
