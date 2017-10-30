@@ -443,3 +443,26 @@ Node экспортер будем запускать также в контей
 - $ `docker build -t $USERNAME/prometheus .` - собрать новый Docker образ для Прометея
 - $ `docker-compose down`
 - $ `docker-compose up -d`
+
+## Задание со звездочкой
+
+### 1\. Сделать мониторинг MongoDB с использованием экспортера
+
+Используем [MongoDB exporter](https://github.com/dcu/mongodb_exporter) для сбора информации о работе MongoDB
+
+#### Файлы:
+
+- ~/microservices/prometheus/prometheus.yml - в этот файл добавили новый job `mongodb`, чтобы Прометей мог следить за Монгой
+- ~/microservices/docker-compose.yml - описали сервис `mongodb-exporter`, указав переменную `MONGODB_URL` (например, MONGODB_URL=mongodb://mongo_db:27017)
+
+#### Команды:
+
+- $ `git clone git@github.com:dcu/mongodb_exporter.git ~/microservices/mongodb_exporter`
+- $ `cd ~/microservices/mongodb_exporter`
+- $ `docker build -t $USERNAME/mongodb-exporter .`
+
+  > Директорию ~/microservices/mongodb_exporter удалим за ненадобностью, так как у нас есть необходимый образ
+
+- $ `docker-compose down`
+
+- $ `docker-compose up -d`

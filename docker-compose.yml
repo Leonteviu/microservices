@@ -62,7 +62,17 @@ services:
       front_net:
         aliases:
           - node-exporter
-
+  mongodb-exporter:
+    image: ${USERNAME}/mongodb-exporter
+    environment:
+      - MONGODB_URL=mongodb://mongo_db:27017
+    networks:
+      back_net:
+        aliases:
+          - mongodb_exporter
+      front_net:
+        aliases:
+          - mongodb_exporter
 
 volumes:
   post_db:
