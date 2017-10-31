@@ -423,7 +423,7 @@ Node экспортер будем запускать также в контей
 
 ### 1\. Сделать мониторинг MongoDB с использованием экспортера
 
-Используем [MongoDB exporter](https://github.com/dcu/mongodb_exporter) для сбора информации о работе MongoDB
+Используем [MongoDB exporter](https://hub.docker.com/r/crobox/mongodb-exporter) для сбора информации о работе MongoDB
 
 #### Файлы:
 
@@ -432,20 +432,14 @@ Node экспортер будем запускать также в контей
 
 #### Команды:
 
-- $ `git clone git@github.com:dcu/mongodb_exporter.git ~/microservices/mongodb_exporter`
-- $ `cd ~/microservices/mongodb_exporter`
-- $ `docker build -t $USERNAME/mongodb-exporter .`
-
-  > Директорию ~/microservices/mongodb_exporter удалим за ненадобностью, так как у нас есть необходимый образ
+> Директорию ~/microservices/mongodb_exporter удалим за ненадобностью, так как у нас есть необходимый образ
 
 - $ `docker-compose down`
 
 - $ `docker-compose up -d`
 
-### 2\. Исследовать вопрос необходимости использования blackbox экспортера
+> Можно и самим собрать образ Используем [MongoDB exporter](https://github.com/dcu/mongodb_exporter) для сбора информации о работе MongoDB
 
-Используем [blackbox экспортер](https://github.com/prometheus/blackbox_exporter)
-
-#### Файлы:
-
-#### Команды:
+> - $ `git clone git@github.com:dcu/mongodb_exporter.git ~/microservices/mongodb_exporter`
+> - $ `cd ~/microservices/mongodb_exporter`
+> - $ `docker build -t $USERNAME/mongodb-exporter .`
