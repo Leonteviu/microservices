@@ -18,32 +18,22 @@ services:
   post:
     image: ${USERNAME}/post:${POST_VERSION}
     networks:
-      back_net:
-        aliases:
-          - post_db
-      front_net:
-        aliases:
-          - post_db
+      - back_net
+      - front_net
+
   comment:
     image: ${USERNAME}/comment:${COMMENT_VERSION}
     networks:
-      back_net:
-        aliases:
-          - comment_db
-      front_net:
-        aliases:
-          - comment_db
+      - back_net
+      - front_net
+
   prometheus:
     image: ${USERNAME}/prometheus
     ports:
       - '9090:9090'
     networks:
-      back_net:
-        aliases:
-          - prometheus
-      front_net:
-        aliases:
-          - prometheus
+      - back_net
+      - front_net
   node-exporter:
     image: prom/node-exporter:v0.15.0
     user: root
@@ -56,23 +46,14 @@ services:
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
     networks:
-      back_net:
-        aliases:
-          - node-exporter
-      front_net:
-        aliases:
-          - node-exporter
+      - front_net
   mongodb-exporter:
-    image: ${USERNAME}/mongodb-exporter
+    image: crobox/mongodb-exporter
     environment:
       - MONGODB_URL=mongodb://mongo_db:27017
     networks:
-      back_net:
-        aliases:
-          - mongodb_exporter
-      front_net:
-        aliases:
-          - mongodb_exporter
+      - back_net
+      - front_net
 
 volumes:
   post_db:
