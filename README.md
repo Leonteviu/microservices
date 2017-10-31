@@ -306,3 +306,146 @@ The command '/bin/sh -c bundle install' returned a non-zero code: 5<br>
 
 - Задать имя переменной COMPOSE_PROJECT_NAME, например `export COMPOSE_PROJECT_NAME=hw17`
 - Для поднятия наших сервисов с помощью compose файла использовать команду `docker-compose -p hw17 up -d`
+
+# Homework 21 (branch monitoring-1)
+
+## План
+
+### Prometheus: запуск, конфигурация, знакомство с Web UI
+
+### Мониторинг состояния микросервисов
+
+### Сбор метрик хоста с использованием экспортера
+
+## Необходимо:<br>
+
+Подготовить окружение:
+
+> Прежде всего необходимо выбрать конфигурацию **gcloud**<br>
+> $ `**gcloud init**` Выберем наш проект **infra-XXXXXX**, в котором будем работать<br>
+
+- Создать правило файрвола для **Prometheus** и **Puma**
+
+  - $ `gcloud compute firewall-rules create prometheus-default --allow tcp:9090`
+  - $ `gcloud compute firewall-rules create puma-default --allow tcp:9292`
+
+- Создать Docker хост в GCE и настроим локальное окружение на работу с ним:
+
+  - $ `docker-machine create --driver google --google-project infra-179710 --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts --google-machine-type n1-standard-1 --google-zone europe-west1-b vm1`
+  - $ `eval $(docker-machine env vm1)`
+
+### Prometheus: запуск, конфигурация, знакомство с Web UI
+
+> Систему мониторинга Прометей будем запускать внутри Docker контейнера. Для начального знакомства воспользуемся готовым образом с DockerHub.
+
+WEB-интерфейс будет находится по адресу <http://IP_vm1:9090/graph>
+
+> $`docker-machine ip vm1` - узнать адрес vm1
+
+#### Файлы:
+
+- ~/microservices/prometheus/Dockerfile - для сбора на основе готового образа с DockerHub Docker образа с конфигурацией для мониторинга наших микросервисов
+- ~/microservices/prometheus/prometheus.yml - конфигурационный файл Прометея
+
+> Будем поднимать наш Прометей совместно с микросервисами.<br>
+> Определите в вашем docker-compose.yml файле, сервис Прометея.<br>
+> Добавим сервис `prometheus:` в `docker-compose.yml`<br>
+
+> Мы будем использовать Прометей для мониторинга всех<br>
+> наших микросервисов, поэтому нам необходимо, чтобы<br>
+> контейнер с Прометеем мог общаться по сети со всеми<br>
+> другими сервисами, определенными в компоуз файле.<br>
+> Добавим секцию networks в определение<br>
+> сервиса Прометея в docker-compose.yml.
+
+#### Команды:
+
+- $ `docker run --rm -p 9090:9090 -d --name prometheus prom/prometheus` - запуск контейнера
+- $ `docker ps`
+- $ `docker stop prometheus` - остановка контейнера<br>
+
+- $ `export USERNAME=leonteviu` - USERNAME - ваш логин от DockerHub
+
+- $ `docker build -t $USERNAME/prometheus .` - собирем Docker образ в директории prometheus
+
+> Код микросервисов обновился, мы добавили туда healthcheck-и<br>
+> для проверки работоспособности нашего приложения. Сборку<br>
+> образов теперь необходимо производить при помощи скриптов<br>
+> `docker_build.sh`, которые появились в каждой директории<br>
+> сервиса. С его помощью мы будем использовать информацию Git<br>
+> репозитория в нашем healthcheck-е.
+
+- $ `bash ui/docker_build.sh` - сборка микросервиса ui
+- $ `bash post-py/docker_build.sh` - сборка микросервиса post-py
+- $ `bash comment/docker_build.sh` - сборка микросервиса comment
+- $ `docker-compose up -d` - запуск микросервисов
+
+### Мониторинг состояния микросервисов
+
+#### Файлы:
+
+#### Команды:
+
+### Сбор метрик хоста с использованием экспортера
+
+> Экспортер похож на вспомогательного агента для сбора метрик.<br>
+> В ситуациях, когда мы не можем реализовать отдачу метрик Прометею в<br>
+> коде приложения, мы можем использовать экспортер, который будет<br>
+> транслировать метрики приложения или системы в формате доступном для<br>
+> чтения Прометеем.<br>
+
+Используем [Node экспортер](https://github.com/prometheus/node_exporter) для сбора информации о работе Docker хоста<br>
+(виртуалки, где у нас запущены контейнеры) и предоставлению этой<br>
+информации Прометею.<br>
+
+Node экспортер будем запускать также в контейнере.<br>
+Определим еще один сервис **node-exporter:** в docker-compose.yml файле.<br>
+
+> Не забудем добавить секцию networks в определение<br>
+> сервиса node-exporter в docker-compose.yml.
+
+Чтобы сказать Прометею следить за еще одним сервисом,<br>
+нам нужно добавить информацию об этом сервисе в конфиг Прометея.<br>
+Добавим еще один job: `- job_name: 'node'`
+
+> Не забудем собрать новый Docker образ для Прометея,<br>
+> и пересоздать наши сервисы
+
+#### Файлы:
+
+#### Команды:
+
+- $ `docker build -t $USERNAME/prometheus .` - собрать новый Docker образ для Прометея
+- $ `docker-compose down`
+- $ `docker-compose up -d`
+
+## Задание со звездочкой
+
+### 1\. Сделать мониторинг MongoDB с использованием экспортера
+
+Используем [MongoDB exporter](https://github.com/dcu/mongodb_exporter) для сбора информации о работе MongoDB
+
+#### Файлы:
+
+- ~/microservices/prometheus/prometheus.yml - в этот файл добавили новый job `mongodb`, чтобы Прометей мог следить за Монгой
+- ~/microservices/docker-compose.yml - описали сервис `mongodb-exporter`, указав переменную `MONGODB_URL` (например, MONGODB_URL=mongodb://mongo_db:27017)
+
+#### Команды:
+
+- $ `git clone git@github.com:dcu/mongodb_exporter.git ~/microservices/mongodb_exporter`
+- $ `cd ~/microservices/mongodb_exporter`
+- $ `docker build -t $USERNAME/mongodb-exporter .`
+
+  > Директорию ~/microservices/mongodb_exporter удалим за ненадобностью, так как у нас есть необходимый образ
+
+- $ `docker-compose down`
+
+- $ `docker-compose up -d`
+
+### 2\. Исследовать вопрос необходимости использования blackbox экспортера
+
+Используем [blackbox экспортер](https://github.com/prometheus/blackbox_exporter)
+
+#### Файлы:
+
+#### Команды:
