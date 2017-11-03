@@ -462,7 +462,7 @@ Node экспортер будем запускать также в контей
 
 ## Мониторинг Docker контейнеров
 
-### cAdvisor
+### cAdvisor (<http://docker-machine-host-ip:8080>)
 
 > Мы будем использовать [cAdvisor](https://github.com/google/cadvisor) для наблюдения за состоянием наших Docker контейнеров.<br>
 > cAdvisor собирает информацию о ресурсах потребляемых контейнерами и характеристиках их работы.<br>
@@ -482,3 +482,23 @@ Node экспортер будем запускать также в контей
 - $ `export USER_NAME=leonteviu`
 - $ `docker build -t $USER_NAME/prometheus .`
 - $ `docker-compose up -d`
+
+## Визуализация метрик (Grafana <http://docker-mahine-host-ip:3000>)
+
+> Используем инструмент [Grafana](https://github.com/grafana/grafana) для визуализации основных метрик Docker контенеров.
+
+> На сайте Grafana можно найти и скачать большое количество уже созданных официальных и<br>
+> комьюнити [дашбордов](https://grafana.com/dashboards) для визуализации различного типа метрик<br>
+> для разных систем мониторинга и баз данных
+
+### Файлы:
+
+- ~/microservices/docker-compose.yml - добавили информацию о новом сервисе **grafana**
+
+  > не забыть поместите данный сервис в одну сеть с Прометеем, чтобы тот мог собирать с него метрики<br>
+
+- ~/microservices/dashboards - директория для скаченных дашбордов
+
+### Команды:
+
+- $ `docker-compose up -d grafana`
