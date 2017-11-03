@@ -443,3 +443,42 @@ Node экспортер будем запускать также в контей
 > - $ `git clone git@github.com:dcu/mongodb_exporter.git ~/microservices/mongodb_exporter`
 > - $ `cd ~/microservices/mongodb_exporter`
 > - $ `docker build -t $USERNAME/mongodb-exporter .`
+
+# Homework 22-23 (branch monitoring-2)
+
+## План
+
+- Мониторинг Docker контейнеров
+- Визуализация метрик
+- Сбор метрик работы приложения и бизнес метрик
+- Настройка алертинга
+
+## Необходимо
+
+Создадим Docker хост в GCE и настроим локальное окружение на работу с ним (infra-179710 - ID нашего репозитория)
+
+- $ `docker-machine create --driver google --google-project infra-179710 --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts --google-machine-type n1-standard-1 --google-zone europe-west1-b --google-open-port 80/tcp --google-open-port 3000/tcp --google-open-port 8080/tcp --google-open-port 9090/tcp --google-open-port 9292/tcp vm1`
+- $ `eval $(docker-machine env vm1)`
+
+## Мониторинг Docker контейнеров
+
+### cAdvisor
+
+> Мы будем использовать [cAdvisor](https://github.com/google/cadvisor) для наблюдения за состоянием наших Docker контейнеров.<br>
+> cAdvisor собирает информацию о ресурсах потребляемых контейнерами и характеристиках их работы.<br>
+> Примерами метрик являются:<br>
+> процент использования контейнером CPU и памяти, выделенные для его запуска, объем сетевого трафика и др.<br>
+
+#### Файлы:
+
+- ~/microservices/docker-compose.yml - добавили информацию о новом сервисе **cadvisor**
+
+  > не забыть поместите данный сервис в одну сеть с Прометеем, чтобы тот мог собирать с него метрики<br>
+
+- ~/microservices/prometheus/prometheus.yml - добавили информацию о новом сервисе **cadvisor**
+
+#### Команды:
+
+- $ `export USER_NAME=leonteviu`
+- $ `docker build -t $USER_NAME/prometheus .`
+- $ `docker-compose up -d`
