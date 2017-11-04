@@ -538,3 +538,17 @@ Node экспортер будем запускать также в контей
 > В качестве примера метрик бизнес логики мы в наше приложение мы добавили счетчики количества постов и комментариев, соответственно в post-py/post_app.py и в comment/comment_app.rb:<br>
 > • post_count<br>
 > • comment_count<br>
+
+## Настройка алертинга
+
+### Файлы:
+
+- ~/microservices/alertmanager - директория для алертменеджера
+- ~/microservices/alertmanager/config.yml - описано определение отправки нотификаций в ваш тестовый Slack канал
+- ~/microservices/alertmanager/Dockerfile
+- ~/microservices/docker-compose.yml - добавили новый сервис alertmanager
+- ~/microservices/prometheus/alert.rules - определим условия при которых должен срабатывать алерт и посылаться Alertmanager-у
+
+### Команды:
+
+- $ `docker build -t $USER_NAME/alertmanager .` - Соберем образ alertmanager (выполнить в директории alertmanager)
