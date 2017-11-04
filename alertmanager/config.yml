@@ -1,5 +1,5 @@
 global:
-  slack_api_url: 'https://hooks.slack.com/services/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'
+  slack_api_url: 'https://hooks.slack.com/services/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'
 
 route:
   receiver: 'slack-notifications'
@@ -7,4 +7,4 @@ route:
 receivers:
 - name: 'slack-notifications'
   slack_configs:
-- channel: '#igor-leontev'
+  - channel: '#igor-leontev'

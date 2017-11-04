@@ -548,7 +548,13 @@ Node экспортер будем запускать также в контей
 - ~/microservices/alertmanager/Dockerfile
 - ~/microservices/docker-compose.yml - добавили новый сервис alertmanager
 - ~/microservices/prometheus/alert.rules - определим условия при которых должен срабатывать алерт и посылаться Alertmanager-у
+- ~/microservices/prometheus/prometheus.yml - Добавим информацию о правилах, в конфиг Прометея
 
 ### Команды:
 
 - $ `docker build -t $USER_NAME/alertmanager .` - Соберем образ alertmanager (выполнить в директории alertmanager)
+- $ `docker build -t $USER_NAME/prometheus .` - пересоберем Прометей после добавления алертинга
+- $ `docker-compose stop prometheus`
+- $ `docker-compose rm prometheus`
+- $ `docker-compose up -d prometheus`
+- $ `docker-compose up -d alertmanager`
