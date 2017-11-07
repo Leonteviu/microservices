@@ -89,6 +89,17 @@ services:
     networks:
       - back_net
       - front_net
+  stackdriver:
+    image: frodenas/stackdriver-exporter
+    environment:
+      - STACKDRIVER_EXPORTER_GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID}
+      - STACKDRIVER_EXPORTER_MONITORING_METRICS_TYPE_PREFIXES=${STACKDRIVER_EXPORTER_MONITORING_METRICS}
+      - STACKDRIVER_EXPORTER_MONITORING_METRICS_INTERVAL=${MONITORING_METRICS_INTERVAL}
+    ports:
+      - 9255:9255
+    networks:
+      - back_net
+      - front_net
 
 volumes:
   post_db:

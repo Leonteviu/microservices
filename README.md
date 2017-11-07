@@ -558,3 +558,7 @@ Node экспортер будем запускать также в контей
 - $ `docker-compose rm prometheus`
 - $ `docker-compose up -d prometheus`
 - $ `docker-compose up -d alertmanager`
+
+## Задание со звездочкой:
+
+[Stackdriver](https://github.com/frodenas/stackdriver_exporter)
