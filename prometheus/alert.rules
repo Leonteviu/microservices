@@ -6,3 +6,11 @@ ALERT InstanceDown
     summary = "Instance {{ $labels.instance }} down",
     description = "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute.",
   }
+
+# Alert when HTTP request with error.
+ALERT UI_HTTP_Requests_with_Error
+  IF ui_request_count{http_status=~"^[45].*"} > 0
+  ANNOTATIONS {
+    summary = "UI HTTP Requests {{ $labels.instance }} with Error",
+    description = "{{ $labels.instance }} UI HTTP Requests with Error",
+  }
