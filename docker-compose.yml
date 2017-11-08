@@ -1,5 +1,7 @@
 version: '3.3'
+
 services:
+
   mongo_db:
     image: mongo:${MONGO_VER}
     volumes:
@@ -9,12 +11,14 @@ services:
         aliases:
           - post_db
           - comment_db
+
   ui:
     image: ${USERNAME}/ui:${UI_VERSION}
     ports:
       - ${EXTERNAL_PORT}:${CONTAINER_PORT}/${PROTOCOL}
     networks:
       - front_net
+
   post:
     image: ${USERNAME}/post:${POST_VERSION}
     networks:
@@ -34,6 +38,7 @@ services:
     networks:
       - back_net
       - front_net
+
   node-exporter:
     image: prom/node-exporter:v0.15.0
     user: root
@@ -47,6 +52,7 @@ services:
       - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
     networks:
       - front_net
+
   mongodb-exporter:
     image: crobox/mongodb-exporter
     environment:
@@ -54,6 +60,7 @@ services:
     networks:
       - back_net
       - front_net
+
   cadvisor:
     image: google/cadvisor:latest
     volumes:
@@ -66,6 +73,7 @@ services:
     networks:
       - back_net
       - front_net
+
   grafana:
     image: grafana/grafana
     volumes:
@@ -80,6 +88,7 @@ services:
     networks:
       - back_net
       - front_net
+
   alertmanager:
     image: ${USER_NAME}/alertmanager
     command:
@@ -89,6 +98,7 @@ services:
     networks:
       - back_net
       - front_net
+
   stackdriver:
     image: frodenas/stackdriver-exporter
     environment:
