@@ -7,9 +7,11 @@ ALERT InstanceDown
     description = "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute.",
   }
 
-# Alert when HTTP request with error.
+# Alert when rate of HTTP request with error > 0.15 for 2 minutes.
 ALERT UI_HTTP_Requests_with_Error
-  IF ui_request_count{http_status=~"^[45].*"} > 0
+  IF rate(ui_request_count{http_status=~"^[45].*"}[1m]) > 0.15
+  FOR 2m
+  LABELS { description = "UI HTTP Requests {{ $labels.path }} with Error for 2 minutes" }
   ANNOTATIONS {
     summary = "UI HTTP Requests {{ $labels.instance }} with Error",
     description = "{{ $labels.instance }} UI HTTP Requests with Error",
