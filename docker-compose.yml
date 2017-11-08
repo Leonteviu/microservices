@@ -1,5 +1,7 @@
 version: '3.3'
+
 services:
+
   mongo_db:
     image: mongo:${MONGO_VER}
     volumes:
@@ -9,12 +11,14 @@ services:
         aliases:
           - post_db
           - comment_db
+
   ui:
     image: ${USERNAME}/ui:${UI_VERSION}
     ports:
       - ${EXTERNAL_PORT}:${CONTAINER_PORT}/${PROTOCOL}
     networks:
       - front_net
+
   post:
     image: ${USERNAME}/post:${POST_VERSION}
     networks:
@@ -34,6 +38,7 @@ services:
     networks:
       - back_net
       - front_net
+
   node-exporter:
     image: prom/node-exporter:v0.15.0
     user: root
@@ -47,6 +52,7 @@ services:
       - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
     networks:
       - front_net
+
   mongodb-exporter:
     image: crobox/mongodb-exporter
     environment:
@@ -55,8 +61,59 @@ services:
       - back_net
       - front_net
 
+  cadvisor:
+    image: google/cadvisor:latest
+    volumes:
+      - '/:/rootfs:ro'
+      - '/var/run:/var/run:rw'
+      - '/sys:/sys:ro'
+      - '/var/lib/docker/:/var/lib/docker:ro'
+    ports:
+      - '8080:8080'
+    networks:
+      - back_net
+      - front_net
+
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=secret
+    depends_on:
+      - prometheus
+    ports:
+      - 3000:3000
+    networks:
+      - back_net
+      - front_net
+
+  alertmanager:
+    image: ${USER_NAME}/alertmanager
+    command:
+      - '-config.file=/etc/alertmanager/config.yml'
+    ports:
+      - 9093:9093
+    networks:
+      - back_net
+      - front_net
+
+  stackdriver:
+    image: frodenas/stackdriver-exporter
+    environment:
+      - STACKDRIVER_EXPORTER_GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID}
+      - STACKDRIVER_EXPORTER_MONITORING_METRICS_TYPE_PREFIXES=${STACKDRIVER_EXPORTER_MONITORING_METRICS}
+      - STACKDRIVER_EXPORTER_MONITORING_METRICS_INTERVAL=${MONITORING_METRICS_INTERVAL}
+    ports:
+      - 9255:9255
+    networks:
+      - back_net
+      - front_net
+
 volumes:
   post_db:
+  grafana_data:
 
 networks:
   front_net:

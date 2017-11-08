@@ -443,3 +443,122 @@ Node экспортер будем запускать также в контей
 > - $ `git clone git@github.com:dcu/mongodb_exporter.git ~/microservices/mongodb_exporter`
 > - $ `cd ~/microservices/mongodb_exporter`
 > - $ `docker build -t $USERNAME/mongodb-exporter .`
+
+# Homework 22-23 (branch monitoring-2)
+
+## План
+
+- Мониторинг Docker контейнеров
+- Визуализация метрик
+- Сбор метрик работы приложения и бизнес метрик
+- Настройка алертинга
+
+## Необходимо
+
+Создадим Docker хост в GCE и настроим локальное окружение на работу с ним (infra-179710 - ID нашего репозитория)
+
+- $ `docker-machine create --driver google --google-project infra-179710 --google-machine-image https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/family/ubuntu-1604-lts --google-machine-type n1-standard-1 --google-zone europe-west1-b --google-open-port 80/tcp --google-open-port 3000/tcp --google-open-port 8080/tcp --google-open-port 9090/tcp --google-open-port 9292/tcp vm1`
+- $ `eval $(docker-machine env vm1)`
+
+## Мониторинг Docker контейнеров
+
+### cAdvisor (<http://docker-machine-host-ip:8080>)
+
+> Мы будем использовать [cAdvisor](https://github.com/google/cadvisor) для наблюдения за состоянием наших Docker контейнеров.<br>
+> cAdvisor собирает информацию о ресурсах потребляемых контейнерами и характеристиках их работы.<br>
+> Примерами метрик являются:<br>
+> процент использования контейнером CPU и памяти, выделенные для его запуска, объем сетевого трафика и др.<br>
+
+#### Файлы:
+
+- ~/microservices/docker-compose.yml - добавили информацию о новом сервисе **cadvisor**
+
+  > не забыть поместите данный сервис в одну сеть с Прометеем, чтобы тот мог собирать с него метрики<br>
+
+- ~/microservices/prometheus/prometheus.yml - добавили информацию о новом сервисе **cadvisor**
+
+#### Команды:
+
+- $ `export USER_NAME=leonteviu`
+- $ `docker build -t $USER_NAME/prometheus .`
+- $ `docker-compose up -d`
+
+## Визуализация метрик (Grafana <http://docker-mahine-host-ip:3000>)
+
+> Используем инструмент [Grafana](https://github.com/grafana/grafana) для визуализации основных метрик Docker контенеров.
+
+> На сайте Grafana можно найти и скачать большое количество уже созданных официальных и<br>
+> комьюнити [дашбордов](https://grafana.com/dashboards) для визуализации различного типа метрик<br>
+> для разных систем мониторинга и баз данных
+
+### Файлы:
+
+- ~/microservices/docker-compose.yml - добавили информацию о новом сервисе **grafana**
+
+  > не забыть поместите данный сервис в одну сеть с Прометеем, чтобы тот мог собирать с него метрики<br>
+
+- ~/microservices/dashboards - директория для скаченных дашбордов
+
+### Команды:
+
+- $ `docker-compose up -d grafana`
+
+## Сбор метрик работы приложения и бизнес метрик
+
+### 1\. Сбор метрик приложения
+
+#### Мониторинг работы приложения
+
+> В качестве примера метрик приложения в сервис UI мы добавили:<br>
+> • счетчик `ui_request_count`, который считает каждый приходящий HTTP запрос (добавляя через лейблы такую<br>
+> информацию как HTTP метод, путь, код возврата, мы уточняем данную метрику)<br>
+> • гистограмму `ui_request_latency_seconds`, которая позволяет отслеживать информацию о времени обработки<br>
+> каждого запроса<br>
+
+> В качестве примера метрик приложения в сервис Post мы добавили:<br>
+> • Гистограмму `post_read_db_seconds`, которая позволяет отследить информацию о времени требуемом для поиска<br>
+> поста в БД<br>
+
+##### Файлы:
+
+- ~/microservices/prometheus.yml - добавили информацию о post сервисе в конфигурацию Прометея, чтобы он начал собирать метрики и с него
+
+  ##### Команды:
+
+- $ `bash ui/docker_build.sh` - сборка микросервиса ui
+
+- $ `bash post-py/docker_build.sh` - сборка микросервиса post-py
+
+- $ `bash comment/docker_build.sh` - сборка микросервиса comment
+
+- $ `docker-compose up -d` - запуск микросервисов
+
+### 2\. Сбор метрик бизнес логики
+
+> В качестве примера метрик бизнес логики мы в наше приложение мы добавили счетчики количества постов и комментариев, соответственно в post-py/post_app.py и в comment/comment_app.rb:<br>
+> • post_count<br>
+> • comment_count<br>
+
+## Настройка алертинга
+
+### Файлы:
+
+- ~/microservices/alertmanager - директория для алертменеджера
+- ~/microservices/alertmanager/config.yml - описано определение отправки нотификаций в ваш тестовый Slack канал
+- ~/microservices/alertmanager/Dockerfile
+- ~/microservices/docker-compose.yml - добавили новый сервис alertmanager
+- ~/microservices/prometheus/alert.rules - определим условия при которых должен срабатывать алерт и посылаться Alertmanager-у
+- ~/microservices/prometheus/prometheus.yml - Добавим информацию о правилах, в конфиг Прометея
+
+### Команды:
+
+- $ `docker build -t $USER_NAME/alertmanager .` - Соберем образ alertmanager (выполнить в директории alertmanager)
+- $ `docker build -t $USER_NAME/prometheus .` - пересоберем Прометей после добавления алертинга
+- $ `docker-compose stop prometheus`
+- $ `docker-compose rm prometheus`
+- $ `docker-compose up -d prometheus`
+- $ `docker-compose up -d alertmanager`
+
+## Задание со звездочкой:
+
+[Stackdriver](https://github.com/frodenas/stackdriver_exporter)
