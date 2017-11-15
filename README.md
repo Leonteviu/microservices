@@ -578,3 +578,42 @@ Node экспортер будем запускать также в контей
 - $ `bash ui/docker_build.sh` - сборка микросервиса ui
 - $ `bash post-py/docker_build.sh` - сборка микросервиса post-py
 - $ `bash comment/docker_build.sh` - сборка микросервиса comment
+
+## Построим кластер Docker Swarm
+
+### Файлы:
+
+### Команды:
+
+- $ `docker-machine create --driver google --google-project infra-179710 --google-zone europe-west1-b --google-machine-type g1-small --google-machine-image $(gcloud compute images list --filter ubuntu-1604-lts --uri) master-1`
+- $ `docker-machine create --driver google --google-project infra-179710 --google-zone europe-west1-b --google-machine-type g1-small --google-machine-image $(gcloud compute images list --filter ubuntu-1604-lts --uri) worker-1`
+- $ `docker-machine create --driver google --google-project infra-179710 --google-zone europe-west1-b --google-machine-type g1-small --google-machine-image $(gcloud compute images list --filter ubuntu-1604-lts --uri) worker-2`
+
+- $ `eval $(docker-machine env master-1)`
+
+- $ `docker swarm init` - Инициализируем Swarm-mode
+
+  > P.S. если на сервере несколько сетевых интерфейсов или<br>
+  > сервер находится за NAT, то необходимо указывать флаг<br>
+  > --advertise-addr с конкретным адресом публикации.<br>
+  > По-умолчанию это будет <адрес интерфейса>:2377<br>
+
+- $ `docker swarm join-token manager/worker` - также, при необходимости, для добавления нод можно сгенерировать токен с помощью этой команды
+
+На хостах worker-1 и worker-2 соответственно выполним:
+
+- $ `eval $(docker-machine env worker-1)`
+
+- $ `docker swarm join --token <ваш токен> <advertise адрес manager’a>:2377`
+
+- $ `eval $(docker-machine env worker-2)`
+
+- $ `docker swarm join --token <ваш токен> <advertise адрес manager’a>:2377`
+
+  > Подключаемся к master-1 ноде (ssh или eval $(docker-machine ...))<br>
+  > Дальше работать будем только с ней. Команды в рамках Swarm-<br>
+  > кластера можно запускать только на Manager-нодах.<br>
+
+- $ `eval $(docker-machine env master-1)`
+
+- $ `docker node ls` - проверить состояние кластера
