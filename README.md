@@ -562,3 +562,19 @@ Node экспортер будем запускать также в контей
 ## Задание со звездочкой:
 
 [Stackdriver](https://github.com/frodenas/stackdriver_exporter)
+
+# Homework 26-27 (branch docker-swarm)
+
+## План
+
+- Построить кластер Docker Swarm
+- Конфигурирование приложения и сервисов для Docker Swarm
+
+### Необходимо
+
+Код микросервиса ui обновился для добавления функционала считывания переменных окружений **host_info** и **env_info** (файлы ui/ui_app.rb и ui/views/layout.haml).
+
+- $ `export USER_NAME=<Docker_ID>`
+- $ `bash ui/docker_build.sh` - сборка микросервиса ui
+- $ `bash post-py/docker_build.sh` - сборка микросервиса post-py
+- $ `bash comment/docker_build.sh` - сборка микросервиса comment
