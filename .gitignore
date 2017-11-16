@@ -6,3 +6,6 @@ build_info.txt
 
 ## python specific
 *.pyc
+
+# my docker-compose.yml (use leter)
+docker-compose.yml.my

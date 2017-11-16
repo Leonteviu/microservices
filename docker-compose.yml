@@ -3,6 +3,10 @@ services:
 
   mongo:
     image: mongo:${MONGO_VER}
+    deploy:
+      placement:
+        constraints:
+          - node.labels.reliability == high
     volumes:
       - mongo_data:/data/db
     networks:
