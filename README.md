@@ -658,7 +658,7 @@ Node экспортер будем запускать также в контей
 
 #### Файлы:
 
-- `microservices/docker-compose.yml` - Определим с помощью **placement constraints** ограничения размещения MongoDB, post, comment и ui
+- `microservices/docker-compose.yml` - Определим с помощью **placement constraints** ограничения размещения MongoDB, post, comment и ui.
 
 #### Команды:
 
