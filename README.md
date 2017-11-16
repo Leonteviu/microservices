@@ -637,6 +637,7 @@ Node экспортер будем запускать также в контей
 > #### 2.1 Labels
 
 > Ограничения размещения определяются с помощью логических<br>
+
 > действий со значениями label-ов (медатанных) нод и docker-engine'ов<br>
 > Обращение к встроенным label'ам нод - `node.*`<br>
 > Обращение к заданным вручную label'ам нод - `node.labels*`<br>
@@ -656,3 +657,9 @@ Node экспортер будем запускать также в контей
 > - $ `$ docker node ls -q | xargs docker node inspect -f '{{ .ID }} [{{ .Description.Hostname }}]: {{ .Spec.Labels }}'` - Посмотреть label'ы всех нод
 
 #### Файлы:
+
+- `microservices/docker-compose.yml` - Определим с помощью **placement constraints** ограничения размещения MongoDB, post, comment и ui
+
+#### Команды:
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV`
