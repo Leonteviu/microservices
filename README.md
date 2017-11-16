@@ -617,3 +617,17 @@ Node экспортер будем запускать также в контей
 - $ `eval $(docker-machine env master-1)`
 
 - $ `docker node ls` - проверить состояние кластера
+
+## Конфигурирование приложения и сервисов для Docker Swarm
+
+### 1.\ Stack
+
+> Сервисы и их зависимости объединяем в Stack<br>
+> Stack описываем в формате docker-compose (YML)<br>
+
+#### Команды:
+
+- $ `docker stack deploy/rm/services/ls STACK_NAME` - Управляем стеком с помощью команд
+- $ `docker stack deploy --compose-file docker-compose.yml ENV` - выдает ошибку, так как не поддерживает переменные окружения и .env файлы (ENV - имя стека)
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV` - Workaround подставляет все переменные в `docker-compose.yml`, который в таком виде уже понятен нашей команде `docker stack deploy --compose-file docker-compose.yml ENV`
+- $ `docker stack services DEV` - посмотреть состояние стека. Будете выведена своданая информация по сервисам (не по контейнерам)

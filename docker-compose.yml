@@ -1,128 +1,38 @@
 version: '3.3'
-
 services:
 
-  mongo_db:
+  mongo:
     image: mongo:${MONGO_VER}
     volumes:
-      - post_db:/data/db
+      - mongo_data:/data/db
     networks:
       back_net:
         aliases:
           - post_db
           - comment_db
 
-  ui:
-    image: ${USERNAME}/ui:${UI_VERSION}
-    ports:
-      - ${EXTERNAL_PORT}:${CONTAINER_PORT}/${PROTOCOL}
-    networks:
-      - front_net
-
   post:
-    image: ${USERNAME}/post:${POST_VERSION}
+    image: ${USER_NAME}/post:${POST_VERSION}
     networks:
-      - back_net
       - front_net
+      - back_net
 
   comment:
-    image: ${USERNAME}/comment:${COMMENT_VERSION}
+    image: ${USER_NAME}/comment:${COMMENT_VERSION}
     networks:
-      - back_net
       - front_net
+      - back_net
 
-  prometheus:
-    image: ${USERNAME}/prometheus
+  ui:
+    image: ${USER_NAME}/ui:${UI_VERSION}
     ports:
-      - '9090:9090'
+      - "${UI_PORT}:9292/tcp"
     networks:
-      - back_net
-      - front_net
-
-  node-exporter:
-    image: prom/node-exporter:v0.15.0
-    user: root
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - '--path.procfs=/host/proc'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
-    networks:
-      - front_net
-
-  mongodb-exporter:
-    image: crobox/mongodb-exporter
-    environment:
-      - MONGODB_URL=mongodb://mongo_db:27017
-    networks:
-      - back_net
-      - front_net
-
-  cadvisor:
-    image: google/cadvisor:latest
-    volumes:
-      - '/:/rootfs:ro'
-      - '/var/run:/var/run:rw'
-      - '/sys:/sys:ro'
-      - '/var/lib/docker/:/var/lib/docker:ro'
-    ports:
-      - '8080:8080'
-    networks:
-      - back_net
-      - front_net
-
-  grafana:
-    image: grafana/grafana
-    volumes:
-      - grafana_data:/var/lib/grafana
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=secret
-    depends_on:
-      - prometheus
-    ports:
-      - 3000:3000
-    networks:
-      - back_net
-      - front_net
-
-  alertmanager:
-    image: ${USER_NAME}/alertmanager
-    command:
-      - '-config.file=/etc/alertmanager/config.yml'
-    ports:
-      - 9093:9093
-    networks:
-      - back_net
-      - front_net
-
-  stackdriver:
-    image: frodenas/stackdriver-exporter
-    environment:
-      - STACKDRIVER_EXPORTER_GOOGLE_PROJECT_ID=${GOOGLE_PROJECT_ID}
-      - STACKDRIVER_EXPORTER_MONITORING_METRICS_TYPE_PREFIXES=${STACKDRIVER_EXPORTER_MONITORING_METRICS}
-      - STACKDRIVER_EXPORTER_MONITORING_METRICS_INTERVAL=${MONITORING_METRICS_INTERVAL}
-    ports:
-      - 9255:9255
-    networks:
-      - back_net
       - front_net
 
 volumes:
-  post_db:
-  grafana_data:
+  mongo_data: {}
 
 networks:
-  front_net:
-    driver: bridge
-    ipam:
-      config:
-      - subnet: ${FRONT_SUBNET}
-  back_net:
-    driver: bridge
-    ipam:
-      config:
-      - subnet: ${BACK_SUBNET}
+  back_net: {}
+  front_net: {}
