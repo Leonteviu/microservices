@@ -17,18 +17,30 @@ services:
 
   post:
     image: ${USER_NAME}/post:${POST_VERSION}
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
     networks:
       - front_net
       - back_net
 
   comment:
     image: ${USER_NAME}/comment:${COMMENT_VERSION}
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
     networks:
       - front_net
       - back_net
 
   ui:
     image: ${USER_NAME}/ui:${UI_VERSION}
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
     ports:
       - "${UI_PORT}:9292/tcp"
     networks:
