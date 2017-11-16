@@ -631,3 +631,32 @@ Node экспортер будем запускать также в контей
 - $ `docker stack deploy --compose-file docker-compose.yml ENV` - выдает ошибку, так как не поддерживает переменные окружения и .env файлы (ENV - имя стека)
 - $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV` - Workaround подставляет все переменные в `docker-compose.yml`, который в таком виде уже понятен нашей команде `docker stack deploy --compose-file docker-compose.yml ENV`
 - $ `docker stack services DEV` - посмотреть состояние стека. Будете выведена своданая информация по сервисам (не по контейнерам)
+
+### 2\. Размещаем сервисы
+
+> #### 2.1 Labels
+
+> Ограничения размещения определяются с помощью логических<br>
+> действий со значениями label-ов (медатанных) нод и docker-engine'ов<br>
+> Обращение к встроенным label'ам нод - `node.*`<br>
+> Обращение к заданным вручную label'ам нод - `node.labels*`<br>
+> Обращение к label'ам engine - `engine.labels.*`<br>
+> Примеры:<br>
+
+> - node.labels.reliability == high<br>
+
+> - node.role != manager<br>
+
+> - engine.labels.provider == google<br>
+
+> #### Команды:
+
+> - $ `docker node update --label-add reliability=high master-1` - Добавим label к ноде
+> - $ `docker node ls --filter "label=reliability"` - [Swarm не умеет фильтровать вывод по label-ам нод пока что](https://github.com/moby/moby/issues/27231)
+> - $ `$ docker node ls -q | xargs docker node inspect -f '{{ .ID }} [{{ .Description.Hostname }}]: {{ .Spec.Labels }}'` - Посмотреть label'ы всех нод
+
+#### Файлы:
+
+- `microservices/docker-compose.yml` - Определим с помощью **placement constraints** ограничения размещения MongoDB
+
+#### Команды:
