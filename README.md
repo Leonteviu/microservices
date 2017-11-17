@@ -664,7 +664,7 @@ Node экспортер будем запускать также в контей
 
 - $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV`
 
-### 3.\ Масштабируем сервисы
+### 3\. Масштабируем сервисы
 
 > Существует 2 варианта запуска:<br>
 > replicated mode - запустить определенное число задач (default)<br>
