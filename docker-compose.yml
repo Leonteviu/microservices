@@ -47,7 +47,7 @@ services:
       update_config:
         delay: 5s
         parallelism: 1
-        failure_action: pause
+        failure_action: rollback
       mode: replicated
       replicas: 4
       placement:
