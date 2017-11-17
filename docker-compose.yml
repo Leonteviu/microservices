@@ -18,6 +18,10 @@ services:
   post:
     image: ${USER_NAME}/post:${POST_VERSION}
     deploy:
+      resources:
+        limits:
+          cpus: '0.30'
+          memory: 300M
       update_config:
         delay: 10s
         parallelism: 2
@@ -34,6 +38,10 @@ services:
   comment:
     image: ${USER_NAME}/comment:${COMMENT_VERSION}
     deploy:
+      resources:
+        limits:
+          cpus: '0.30'
+          memory: 300M
       update_config:
         delay: 10s
         parallelism: 2
@@ -52,6 +60,10 @@ services:
     environment:
       - ENV=DEV
     deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 150M
       update_config:
         delay: 5s
         parallelism: 1

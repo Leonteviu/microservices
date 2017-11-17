@@ -725,3 +725,13 @@ Node экспортер будем запускать также в контей
 #### Команды:
 
 - $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV`
+
+### 5\. Ограничиваем ресурсы
+
+#### Файлы:
+
+- `microservices/docker-compose.yml` - С помощью **resources limits** описываем максимум потребляемых приложениями service CPU и памяти
+
+#### Команды:
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV`
