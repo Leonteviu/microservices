@@ -1,7 +1,7 @@
 version: '3.3'
 services:
 
-  mongo:
+  mongo_db:
     image: mongo:${MONGO_VER}
     deploy:
       placement:
@@ -89,22 +89,6 @@ services:
       - "${UI_PORT}:9292/tcp"
     networks:
       - front_net
-
-  node-exporter:
-    image: prom/node-exporter:${NODE_EXPORTER_VERSION}
-    deploy:
-      mode: global
-    user: root
-    volumes:
-      - /proc:/host/proc:ro
-      - /sys:/host/sys:ro
-      - /:/rootfs:ro
-    command:
-      - '--path.procfs=/host/proc'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.ignored-mount-points="^/(sys|proc|dev|host|etc)($$|/)"'
-    networks:
-      - back_net
 
 volumes:
   mongo_data: {}
