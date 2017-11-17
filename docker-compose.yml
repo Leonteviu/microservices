@@ -18,6 +18,10 @@ services:
   post:
     image: ${USER_NAME}/post:${POST_VERSION}
     deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 15
+        delay: 1s
       resources:
         limits:
           cpus: '0.30'
@@ -38,6 +42,10 @@ services:
   comment:
     image: ${USER_NAME}/comment:${COMMENT_VERSION}
     deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 15
+        delay: 1s
       resources:
         limits:
           cpus: '0.30'
@@ -60,6 +68,10 @@ services:
     environment:
       - ENV=DEV
     deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 3s
       resources:
         limits:
           cpus: '0.50'
