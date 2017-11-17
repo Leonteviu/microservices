@@ -671,6 +671,8 @@ Node экспортер будем запускать также в контей
 > global mode - запустить задачу на каждой ноде<br>
 > **!!! Нельзя заменить replicated mode на global mode (и обратно) без удаления сервиса**<br>
 
+#### 3.1 Replicated mode
+
 #### Файлы:
 
 - `microservices/docker-compose.yml` - Определим с помощью **replicated mode** запустим сервисы MongoDB, post, comment и ui в нескольких экземплярах.
@@ -687,3 +689,16 @@ Node экспортер будем запускать также в контей
   > $ `docker service update --replicas 3 DEV_ui`<br>
   > Выключить все задачи сервиса:<br>
   > $ `docker service update --replicas 0 DEV_ui`<br>
+
+#### 3.2 Globl mode
+
+> Для задач мониторинга кластера нам понадобится запускать<br>
+> node_exporter (только в 1-м экземпляре)<br>
+
+#### Файлы:
+
+- `microservices/docker-compose.yml` - Определим с помощью **global mode** сервис node_exporter
+
+#### Команды:
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV` - Сервисы должны были распределиться равномерно по кластеру
