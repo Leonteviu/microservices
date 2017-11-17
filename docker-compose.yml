@@ -18,6 +18,10 @@ services:
   post:
     image: ${USER_NAME}/post:${POST_VERSION}
     deploy:
+      update_config:
+        delay: 10s
+        parallelism: 2
+        failure_action: rollback
       mode: replicated
       replicas: 4
       placement:
@@ -30,6 +34,10 @@ services:
   comment:
     image: ${USER_NAME}/comment:${COMMENT_VERSION}
     deploy:
+      update_config:
+        delay: 10s
+        parallelism: 2
+        failure_action: rollback
       mode: replicated
       replicas: 4
       placement:
