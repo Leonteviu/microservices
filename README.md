@@ -663,3 +663,27 @@ Node экспортер будем запускать также в контей
 #### Команды:
 
 - $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV`
+
+### 3.\ Масштабируем сервисы
+
+> Существует 2 варианта запуска:<br>
+> replicated mode - запустить определенное число задач (default)<br>
+> global mode - запустить задачу на каждой ноде<br>
+> **!!! Нельзя заменить replicated mode на global mode (и обратно) без удаления сервиса**<br>
+
+#### Файлы:
+
+- `microservices/docker-compose.yml` - Определим с помощью **replicated mode** запустим сервисы MongoDB, post, comment и ui в нескольких экземплярах.
+
+#### Команды:
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV` - Сервисы должны были распределиться равномерно по кластеру
+- $ `docker stack services DEV`
+- $ `docker stack ps DEV`
+
+  > Можно управлять количеством запускаемых сервисов "на лету"<br>
+  > $ `docker service scale DEV_ui=3`<br>
+  > или<br>
+  > $ `docker service update --replicas 3 DEV_ui`<br>
+  > Выключить все задачи сервиса:<br>
+  > $ `docker service update --replicas 0 DEV_ui`<br>
