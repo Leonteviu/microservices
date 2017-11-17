@@ -702,3 +702,5 @@ Node экспортер будем запускать также в контей
 #### Команды:
 
 - $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV` - Сервисы должны были распределиться равномерно по кластеру
+- $ `docker stack services DEV`
+- $ `docker stack ps DEV`
