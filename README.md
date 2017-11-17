@@ -654,7 +654,7 @@ Node экспортер будем запускать также в контей
 
 > - $ `docker node update --label-add reliability=high master-1` - Добавим label к ноде
 > - $ `docker node ls --filter "label=reliability"` - [Swarm не умеет фильтровать вывод по label-ам нод пока что](https://github.com/moby/moby/issues/27231)
-> - $ `$ docker node ls -q | xargs docker node inspect -f '{{ .ID }} [{{ .Description.Hostname }}]: {{ .Spec.Labels }}'` - Посмотреть label'ы всех нод
+> - $ `docker node ls -q | xargs docker node inspect -f '{{ .ID }} [{{ .Description.Hostname }}]: {{ .Spec.Labels }}'` - Посмотреть label'ы всех нод
 
 #### Файлы:
 
@@ -704,3 +704,24 @@ Node экспортер будем запускать также в контей
 - $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV` - Сервисы должны были распределиться равномерно по кластеру
 - $ `docker stack services DEV`
 - $ `docker stack ps DEV`
+
+### 4\. Rolling Update
+
+#### Файлы:
+
+- `microservices/docker-compose.yml` - Определим с помощью **update_config** параметры обновления
+
+  > 1) parallelism - cколько контейнеров (группу) обновить одновременно?<br>
+  > 2) delay - задержка между обновлениями групп контейнеров<br>
+  > 3) order - порядок обновлений (сначала убиваем старые и запускаем<br>
+  > новые или наоборот) (только в compose 3.4)<br>
+  > Обработка ошибочных ситуаций<br>
+  > 4) failure_action - что делать, если при обновлении возникла ошибка<br>
+  > 5) monitor - сколько следить за обновлением, пока не признать его<br>
+  > удачным или ошибочным<br>
+  > 6) max_failure_ratio - сколько раз обновление может пройти с ошибкой<br>
+  > перед тем, как перейти к failure_action<br>
+
+#### Команды:
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV`

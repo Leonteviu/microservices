@@ -19,7 +19,7 @@ services:
     image: ${USER_NAME}/post:${POST_VERSION}
     deploy:
       mode: replicated
-      replicas: 2
+      replicas: 4
       placement:
         constraints:
           - node.role == worker
@@ -31,7 +31,7 @@ services:
     image: ${USER_NAME}/comment:${COMMENT_VERSION}
     deploy:
       mode: replicated
-      replicas: 2
+      replicas: 4
       placement:
         constraints:
           - node.role == worker
@@ -41,9 +41,15 @@ services:
 
   ui:
     image: ${USER_NAME}/ui:${UI_VERSION}
+    environment:
+      - ENV=DEV
     deploy:
+      update_config:
+        delay: 5s
+        parallelism: 1
+        failure_action: pause
       mode: replicated
-      replicas: 2
+      replicas: 4
       placement:
         constraints:
           - node.role == worker
