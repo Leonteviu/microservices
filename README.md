@@ -757,3 +757,37 @@ Node экспортер будем запускать также в контей
 #### Файлы:
 
 - `microservices/docker-compose.yml` - **restart_policy** - ограничим число попыток перезапуска
+
+### Задание
+
+Выделим инфраструктуру, описывающую мониторинг в отдельный файл `docker-compose.infra.yml`<br>
+Основые сервисы приложения (MongoDB, UI, Post, Comment) оставим в файле `docker-compose.yml`
+
+Для запуска приложения вместе с инфрой можно использовать следующую команду:
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.infra.yml -f docker-compose.yml config 2>/dev/null) DEV`
+
+### Задание _*_
+
+> Как вы видите управление несколькими окружениями с помощью .env-файлов<br>
+> и compose-файлов в Swarm?<br>
+> Создайте такие .env-файлы и параметризуйте что считаете нужным в compose-файлах.<br>
+> Напишите команды, с помощью которых вы запустите эти несколько окружений<br>
+> рядом (в кластере) в README-файле.<br>
+
+#### Файлы:
+
+Разнесем наши окружения по разным директориям<br>
+По-умолчанию, все контэйнеры, которые запускаются с помощью docker-compose, используют название текущей директории как префикс. Название этой директории может отличаться в рабочих окружениях. Этот префикс используется, когда мы хотим сослаться на контейнер из основного docker-compose файла. Чтобы зафиксировать этот префикс, нужно создать файл .env в той директории, из которой запускается docker-compose, указав в нем переменную:<br>
+**COMPOSE_PROJECT_NAME=microservices**<br>
+Таким образом, префикс будет одинаковым во всех рабочих окружениях.
+
+- `microservices/compose_main` - содержит `docker-compose.yml` и `.env`, описывающие, соответственно, сервисы нашего приложения (MongoDB, UI, Post, Comment) и используемые здесь переменные
+- `microservices/compose_infra` - содержит `docker-compose.yml` и `.env`, описывающие, сервисы мониторинга (Prometheus, Alertmanager, Node-exporter, mongodb-exporter, stackdriver, Grafana, cAdvisor), а также используемые здесь переменные
+
+#### Команды:
+
+Для запуска наших получившихся окружений
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f compose_main/docker-compose.yml config 2>/dev/null) DEV` - запуск окружения для нашего основного приложения
+- $ `docker stack deploy --compose-file=<(docker-compose -f compose_infra/docker-compose.yml config 2>/dev/null) DEV` - запуск окружения для мониторинга

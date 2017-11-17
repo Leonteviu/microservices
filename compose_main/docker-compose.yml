@@ -1,0 +1,105 @@
+version: '3.3'
+services:
+
+  mongo_db:
+    image: mongo:${MONGO_VER}
+    deploy:
+      placement:
+        constraints:
+          - node.labels.reliability == high
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      back_net:
+        aliases:
+          - post_db
+          - comment_db
+
+  post:
+    image: ${USER_NAME}/post:${POST_VERSION}
+    depends_on:
+      - mongo_db
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 15
+        delay: 1s
+      resources:
+        limits:
+          cpus: '0.30'
+          memory: 300M
+      update_config:
+        delay: 10s
+        parallelism: 2
+        failure_action: rollback
+      mode: replicated
+      replicas: 4
+      placement:
+        constraints:
+          - node.role == worker
+    networks:
+      - front_net
+      - back_net
+
+  comment:
+    image: ${USER_NAME}/comment:${COMMENT_VERSION}
+    depends_on:
+      - mongo_db
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 15
+        delay: 1s
+      resources:
+        limits:
+          cpus: '0.30'
+          memory: 300M
+      update_config:
+        delay: 10s
+        parallelism: 2
+        failure_action: rollback
+      mode: replicated
+      replicas: 4
+      placement:
+        constraints:
+          - node.role == worker
+    networks:
+      - front_net
+      - back_net
+
+  ui:
+    image: ${USER_NAME}/ui:${UI_VERSION}
+    depends_on:
+      - post
+      - comment
+    environment:
+      - ENV=DEV
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        delay: 3s
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 150M
+      update_config:
+        delay: 5s
+        parallelism: 1
+        failure_action: rollback
+      mode: replicated
+      replicas: 4
+      placement:
+        constraints:
+          - node.role == worker
+    ports:
+      - "${UI_PORT}:9292/tcp"
+    networks:
+      - front_net
+
+volumes:
+  mongo_data: {}
+
+networks:
+  back_net: {}
+  front_net: {}
