@@ -783,7 +783,12 @@ Node экспортер будем запускать также в контей
 Таким образом, префикс будет одинаковым во всех рабочих окружениях.
 
 - `microservices/compose_main` - содержит `docker-compose.yml` и `.env`, описывающие, соответственно, сервисы нашего приложения (MongoDB, UI, Post, Comment) и используемые здесь переменные
-- `microservices/compose_infra` - содержит `docker-compose.yml` и `.env`, описывающие, сервисы мониторинга (Prometheus, Alertmanager, Node-exporter, mongodb-exporter, stackdriver, Grafana, cAdvisor), а также используемые здесь переменные
+- `microservices/compose_infra` - содержит `docker-compose.yml` и `.env`, описывающие, сервисы мониторинга (Prometheus, Alertmanager, Node-exporter, mongodb-exporter, stackdriver, Grafana, cAdvisor), а также используемые здесь переменные.<br>
+
+Примеры файлов с описанием переменных для наших окружений (для использования надо переименовать в `.env`):
+
+- `microservices/compose_main/.env_main_example`
+- `microservices/compose_infra/.env_infra_example`
 
 #### Команды:
 
