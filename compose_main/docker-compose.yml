@@ -101,5 +101,7 @@ volumes:
   mongo_data: {}
 
 networks:
-  back_net: {}
-  front_net: {}
+  back_net:
+    external: true
+  front_net:
+    external: true

@@ -796,3 +796,10 @@ Node экспортер будем запускать также в контей
 
 - $ `docker stack deploy --compose-file=<(docker-compose -f compose_main/docker-compose.yml config 2>/dev/null) DEV` - запуск окружения для нашего основного приложения
 - $ `docker stack deploy --compose-file=<(docker-compose -f compose_infra/docker-compose.yml config 2>/dev/null) DEV` - запуск окружения для мониторинга
+
+Если мы хотим, чтобы приложение и мониторинг запускались в разных стеках (например **MAIN** и **INFRA**) и видели друг друга по сети, то предварительно надо создать используемые (**back_net** и **front_net**) overlay сети. Вместе с этим в `docker-compose.yml` в секции networks для каждой сети необходимо указать параметр `external: true`, то есть использовать уже существующую сеть:
+
+- $ `docker network create --driver=overlay --attachable back_net`
+- $ `docker network create --driver=overlay --attachable front_net`
+- $ `docker stack deploy --compose-file=<(docker-compose -f compose_main/docker-compose.yml config 2>/dev/null) MAIN`
+- $ `docker stack deploy --compose-file=<(docker-compose -f compose_infra/docker-compose.yml config 2>/dev/null) INFRA`
