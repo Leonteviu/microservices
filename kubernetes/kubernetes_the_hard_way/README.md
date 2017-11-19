@@ -1280,9 +1280,7 @@ Deploy the kube-dns cluster add-on:
 kubectl create -f https://storage.googleapis.com/kubernetes-the-hard-way/kube-dns.yaml
 ```
 
-```
 output
-```
 
 ```
 serviceaccount "kube-dns" created
@@ -1297,9 +1295,7 @@ List the pods created by the kube-dns deployment:
 kubectl get pods -l k8s-app=kube-dns -n kube-system
 ```
 
-```
 output
-```
 
 ```
 NAME                        READY     STATUS    RESTARTS   AGE
