@@ -1232,9 +1232,7 @@ for instance in worker-0 worker-1 worker-2; do
 done
 ```
 
-```
 output
-```
 
 ```
 10.240.0.20 10.200.0.0/24
@@ -1261,9 +1259,7 @@ List the routes in the kubernetes-the-hard-way VPC network:
 gcloud compute routes list --filter "network: kubernetes-the-hard-way"
 ```
 
-```
 output
-```
 
 ```
 NAME                            NETWORK                  DEST_RANGE     NEXT_HOP                  PRIORITY
