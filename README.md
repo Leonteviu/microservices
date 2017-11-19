@@ -826,3 +826,7 @@ Node экспортер будем запускать также в контей
 - `microservices/kubernetes/comment-deployment.yml`
 - `microservices/kubernetes/ui-deployment.yml`
 - `microservices/kubernetes/mongo-deployment.yml`
+
+## [Kubernetes the hard way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
+
+Результаты прохождения в директории `microservices/kubernetes/kubernetes_the_hard_way`
