@@ -385,3 +385,19 @@ for instance in controller-0 controller-1 controller-2; do
   gcloud compute scp ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem ${instance}:~/
 done
 ```
+
+## Generating Kubernetes Configuration Files for Authentication
+
+### Client Authentication Configs
+
+#### Kubernetes Public IP Address
+
+Each kubeconfig requires a Kubernetes API Server to connect to. To support high availability the IP address assigned to the external load balancer fronting the Kubernetes API Servers will be used.
+
+Retrieve the kubernetes-the-hard-way static IP address:
+
+```
+KUBERNETES_PUBLIC_ADDRESS=$(gcloud compute addresses describe kubernetes-the-hard-way \
+  --region $(gcloud config get-value compute/region) \
+  --format 'value(address)')
+```
