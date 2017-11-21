@@ -562,3 +562,244 @@ Node экспортер будем запускать также в контей
 ## Задание со звездочкой:
 
 [Stackdriver](https://github.com/frodenas/stackdriver_exporter)
+
+# Homework 26-27 (branch docker-swarm)
+
+## План
+
+- Построить кластер Docker Swarm
+- Конфигурирование приложения и сервисов для Docker Swarm
+
+### Необходимо
+
+Код микросервиса ui обновился для добавления функционала считывания переменных окружений **host_info** и **env_info** (файлы ui/ui_app.rb и ui/views/layout.haml).
+
+- $ `export USER_NAME=<Docker_ID>`
+- $ `bash ui/docker_build.sh` - сборка микросервиса ui
+- $ `bash post-py/docker_build.sh` - сборка микросервиса post-py
+- $ `bash comment/docker_build.sh` - сборка микросервиса comment
+
+## Построим кластер Docker Swarm
+
+### Файлы:
+
+### Команды:
+
+- $ `docker-machine create --driver google --google-project infra-179710 --google-zone europe-west1-b --google-machine-type g1-small --google-machine-image $(gcloud compute images list --filter ubuntu-1604-lts --uri) master-1`
+- $ `docker-machine create --driver google --google-project infra-179710 --google-zone europe-west1-b --google-machine-type g1-small --google-machine-image $(gcloud compute images list --filter ubuntu-1604-lts --uri) worker-1`
+- $ `docker-machine create --driver google --google-project infra-179710 --google-zone europe-west1-b --google-machine-type g1-small --google-machine-image $(gcloud compute images list --filter ubuntu-1604-lts --uri) worker-2`
+
+- $ `eval $(docker-machine env master-1)`
+
+- $ `docker swarm init` - Инициализируем Swarm-mode
+
+  > P.S. если на сервере несколько сетевых интерфейсов или<br>
+  > сервер находится за NAT, то необходимо указывать флаг<br>
+  > --advertise-addr с конкретным адресом публикации.<br>
+  > По-умолчанию это будет <адрес интерфейса>:2377<br>
+
+- $ `docker swarm join-token manager/worker` - также, при необходимости, для добавления нод можно сгенерировать токен с помощью этой команды
+
+На хостах worker-1 и worker-2 соответственно выполним:
+
+- $ `eval $(docker-machine env worker-1)`
+
+- $ `docker swarm join --token <ваш токен> <advertise адрес manager’a>:2377`
+
+- $ `eval $(docker-machine env worker-2)`
+
+- $ `docker swarm join --token <ваш токен> <advertise адрес manager’a>:2377`
+
+  > Подключаемся к master-1 ноде (ssh или eval $(docker-machine ...))<br>
+  > Дальше работать будем только с ней. Команды в рамках Swarm-<br>
+  > кластера можно запускать только на Manager-нодах.<br>
+
+- $ `eval $(docker-machine env master-1)`
+
+- $ `docker node ls` - проверить состояние кластера
+
+## Конфигурирование приложения и сервисов для Docker Swarm
+
+### 1.\ Stack
+
+> Сервисы и их зависимости объединяем в Stack<br>
+> Stack описываем в формате docker-compose (YML)<br>
+
+#### Команды:
+
+- $ `docker stack deploy/rm/services/ls STACK_NAME` - Управляем стеком с помощью команд
+- $ `docker stack deploy --compose-file docker-compose.yml ENV` - выдает ошибку, так как не поддерживает переменные окружения и .env файлы (ENV - имя стека)
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV` - Workaround подставляет все переменные в `docker-compose.yml`, который в таком виде уже понятен нашей команде `docker stack deploy --compose-file docker-compose.yml ENV`
+- $ `docker stack services DEV` - посмотреть состояние стека. Будете выведена своданая информация по сервисам (не по контейнерам)
+
+### 2\. Размещаем сервисы
+
+> #### 2.1 Labels
+
+> Ограничения размещения определяются с помощью логических<br>
+
+> действий со значениями label-ов (медатанных) нод и docker-engine'ов<br>
+> Обращение к встроенным label'ам нод - `node.*`<br>
+> Обращение к заданным вручную label'ам нод - `node.labels*`<br>
+> Обращение к label'ам engine - `engine.labels.*`<br>
+> Примеры:<br>
+
+> - node.labels.reliability == high<br>
+
+> - node.role != manager<br>
+
+> - engine.labels.provider == google<br>
+
+> #### Команды:
+
+> - $ `docker node update --label-add reliability=high master-1` - Добавим label к ноде
+> - $ `docker node ls --filter "label=reliability"` - [Swarm не умеет фильтровать вывод по label-ам нод пока что](https://github.com/moby/moby/issues/27231)
+> - $ `docker node ls -q | xargs docker node inspect -f '{{ .ID }} [{{ .Description.Hostname }}]: {{ .Spec.Labels }}'` - Посмотреть label'ы всех нод
+
+#### Файлы:
+
+- `microservices/docker-compose.yml` - Определим с помощью **placement constraints** ограничения размещения MongoDB, post, comment и ui.
+
+#### Команды:
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV`
+
+### 3\. Масштабируем сервисы
+
+> Существует 2 варианта запуска:<br>
+> replicated mode - запустить определенное число задач (default)<br>
+> global mode - запустить задачу на каждой ноде<br>
+> **!!! Нельзя заменить replicated mode на global mode (и обратно) без удаления сервиса**<br>
+
+#### 3.1 Replicated mode
+
+#### Файлы:
+
+- `microservices/docker-compose.yml` - Определим с помощью **replicated mode** запустим сервисы MongoDB, post, comment и ui в нескольких экземплярах.
+
+#### Команды:
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV` - Сервисы должны были распределиться равномерно по кластеру
+- $ `docker stack services DEV`
+- $ `docker stack ps DEV`
+
+  > Можно управлять количеством запускаемых сервисов "на лету"<br>
+  > $ `docker service scale DEV_ui=3`<br>
+  > или<br>
+  > $ `docker service update --replicas 3 DEV_ui`<br>
+  > Выключить все задачи сервиса:<br>
+  > $ `docker service update --replicas 0 DEV_ui`<br>
+
+#### 3.2 Globl mode
+
+> Для задач мониторинга кластера нам понадобится запускать<br>
+> node_exporter (только в 1-м экземпляре)<br>
+
+#### Файлы:
+
+- `microservices/docker-compose.yml` - Определим с помощью **global mode** сервис node_exporter
+
+#### Команды:
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV` - Сервисы должны были распределиться равномерно по кластеру
+- $ `docker stack services DEV`
+- $ `docker stack ps DEV`
+
+### 4\. Rolling Update
+
+#### Файлы:
+
+- `microservices/docker-compose.yml` - Определим с помощью **update_config** параметры обновления (приложение UI должно обновляться группами по 1 контейнеру с разрывом в 5 секунд. В случае возникновения проблем деплой откатиться, сервисы post и comment обновлялются группами по 2 сервиса с разрывом в 10 секунд, а в случае неудач осуществлялся rollback)
+
+  > parallelism - cколько контейнеров (группу) обновить одновременно?<br>
+  > delay - задержка между обновлениями групп контейнеров<br>
+  > order - порядок обновлений (сначала убиваем старые и запускаем<br>
+  > новые или наоборот) (только в compose 3.4)<br>
+  > **Обработка ошибочных ситуаций:**<br>
+  > failure_action - что делать, если при обновлении возникла ошибка<br>
+  > monitor - сколько следить за обновлением, пока не признать его<br>
+  > удачным или ошибочным<br>
+  > max_failure_ratio - сколько раз обновление может пройти с ошибкой<br>
+  > перед тем, как перейти к failure_action<br>
+
+> **Важно отметить!** Если вы перезаписали тег рабочего приложения, то откатить<br>
+> его не получится!!! Приложение будет сломано!<br>
+
+#### Команды:
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV`
+
+### 5\. Ограничиваем ресурсы
+
+> С помощью resources limits описываем максимум потребляемых приложениями CPU и памяти.<br>
+> Это обеспечит нам:<br>
+> представление о том, сколько ресурсов нужно приложению;<br>
+> контроль Docker за тем, чтобы никто не превысил заданного порога (спомощью cgroups);<br>
+> защиту сторонних приложений от неконтролируемого расхода ресурса контейнером;<br>
+
+#### Файлы:
+
+- `microservices/docker-compose.yml` - С помощью **resources limits** описываем максимум потребляемых приложениями service CPU и памяти
+
+#### Команды:
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.yml config 2>/dev/null) DEV`
+
+### 6\. Restart policy
+
+> Если контейнер в рамках задачи завершит свою работу, то планировщик<br>
+> Swarm автоматически запустит новый (даже если он вручную остановлен).<br>
+> Мы можем поменять это поведение (для целей диагностики, например)<br>
+> так, чтобы контейнер перезапускался только при падении контейнера (on-failure).<br>
+> По-умолчанию контейнер будет бесконечно перезапускаться. Это может<br>
+> оказать сильную нагрузку на машину в целом.<br>
+
+#### Файлы:
+
+- `microservices/docker-compose.yml` - **restart_policy** - ограничим число попыток перезапуска
+
+### Задание
+
+Выделим инфраструктуру, описывающую мониторинг в отдельный файл `docker-compose.infra.yml`<br>
+Основые сервисы приложения (MongoDB, UI, Post, Comment) оставим в файле `docker-compose.yml`
+
+Для запуска приложения вместе с инфрой можно использовать следующую команду:
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f docker-compose.infra.yml -f docker-compose.yml config 2>/dev/null) DEV`
+
+### Задание _*_
+
+> Как вы видите управление несколькими окружениями с помощью .env-файлов<br>
+> и compose-файлов в Swarm?<br>
+> Создайте такие .env-файлы и параметризуйте что считаете нужным в compose-файлах.<br>
+> Напишите команды, с помощью которых вы запустите эти несколько окружений<br>
+> рядом (в кластере) в README-файле.<br>
+
+#### Файлы:
+
+Разнесем наши окружения по разным директориям<br>
+По-умолчанию, все контэйнеры, которые запускаются с помощью docker-compose, используют название текущей директории как префикс. Название этой директории может отличаться в рабочих окружениях. Этот префикс используется, когда мы хотим сослаться на контейнер из основного docker-compose файла. Чтобы зафиксировать этот префикс, нужно создать файл .env в той директории, из которой запускается docker-compose, указав в нем переменную:<br>
+**COMPOSE_PROJECT_NAME=microservices**<br>
+Таким образом, префикс будет одинаковым во всех рабочих окружениях.
+
+- `microservices/compose_main` - содержит `docker-compose.yml` и `.env`, описывающие, соответственно, сервисы нашего приложения (MongoDB, UI, Post, Comment) и используемые здесь переменные
+- `microservices/compose_infra` - содержит `docker-compose.yml` и `.env`, описывающие, сервисы мониторинга (Prometheus, Alertmanager, Node-exporter, mongodb-exporter, stackdriver, Grafana, cAdvisor), а также используемые здесь переменные.<br>
+
+Примеры файлов с описанием переменных для наших окружений (для использования надо переименовать в `.env`):
+
+- `microservices/compose_main/.env_main_example`
+- `microservices/compose_infra/.env_infra_example`
+
+#### Команды:
+
+Для запуска наших получившихся окружений
+
+- $ `docker stack deploy --compose-file=<(docker-compose -f compose_main/docker-compose.yml config 2>/dev/null) DEV` - запуск окружения для нашего основного приложения
+- $ `docker stack deploy --compose-file=<(docker-compose -f compose_infra/docker-compose.yml config 2>/dev/null) DEV` - запуск окружения для мониторинга
+
+Если мы хотим, чтобы приложение и мониторинг запускались в разных стеках (например **MAIN** и **INFRA**) и видели друг друга по сети, то предварительно надо создать используемые (**back_net** и **front_net**) overlay сети. Вместе с этим в `docker-compose.yml` в секции networks для каждой сети необходимо указать параметр `external: true`, то есть использовать уже существующую сеть:
+
+- $ `docker network create --driver=overlay --attachable back_net`
+- $ `docker network create --driver=overlay --attachable front_net`
+- $ `docker stack deploy --compose-file=<(docker-compose -f compose_main/docker-compose.yml config 2>/dev/null) MAIN`
+- $ `docker stack deploy --compose-file=<(docker-compose -f compose_infra/docker-compose.yml config 2>/dev/null) INFRA`

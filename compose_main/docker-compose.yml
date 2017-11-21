@@ -17,6 +17,8 @@ services:
 
   post:
     image: ${USER_NAME}/post:${POST_VERSION}
+    depends_on:
+      - mongo_db
     deploy:
       restart_policy:
         condition: on-failure
@@ -41,6 +43,8 @@ services:
 
   comment:
     image: ${USER_NAME}/comment:${COMMENT_VERSION}
+    depends_on:
+      - mongo_db
     deploy:
       restart_policy:
         condition: on-failure
@@ -65,6 +69,9 @@ services:
 
   ui:
     image: ${USER_NAME}/ui:${UI_VERSION}
+    depends_on:
+      - post
+      - comment
     environment:
       - ENV=DEV
     deploy:
@@ -94,5 +101,7 @@ volumes:
   mongo_data: {}
 
 networks:
-  back_net: {}
-  front_net: {}
+  back_net:
+    external: true
+  front_net:
+    external: true
