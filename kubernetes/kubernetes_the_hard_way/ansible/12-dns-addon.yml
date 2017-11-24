@@ -1,0 +1,11 @@
+---
+- name: 12 Deploying the DNS Cluster Add-on
+  hosts: localhost
+  gather_facts: no
+  vars:
+    - dns_cluster_add_on_path: scripts/dns_cluster_add-on
+
+  tasks:
+
+    - name: The DNS Cluster Add-on
+      command: "bash {{ dns_cluster_add_on_path }}/dns_cluster_add-on.sh"

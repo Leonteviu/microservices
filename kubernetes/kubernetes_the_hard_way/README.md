@@ -1,5 +1,7 @@
 # [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) (LINUX)
 
+> Далее идет перечисление команд из Kubernetes The Hard Way
+
 ## Prerequisites
 
 - $ `gcloud init`

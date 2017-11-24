@@ -12,4 +12,4 @@ docker-compose.yml.my
 
 # Kubernetes
 .pem
-scripts
+.retry

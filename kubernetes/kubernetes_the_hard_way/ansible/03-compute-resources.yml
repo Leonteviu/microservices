@@ -1,0 +1,62 @@
+---
+- name: 03 Provisioning Compute Resources
+  hosts: localhost
+  gather_facts: no
+  vars:
+    - service_account_email: 521322188687-compute@developer.gserviceaccount.com
+    - credentials_file: /home/leontev_iu/.ssh/infra-credentials.json
+    - project_id: infra-179710
+    - machine_type: n1-standard-1
+    - zone: us-west1-c
+    - image: ubuntu-1604-xenial-v20171121a
+    - compute_resources_path: scripts/provisioning_compute_resources
+
+  tasks:
+
+    - name: Create Network
+      command: "bash {{ compute_resources_path }}/networking.sh"
+
+    - name: Create Compute Instances
+      command: "bash {{ compute_resources_path }}/compute_instances.sh"
+
+#    - name: Create Controller Instances
+#      gce:
+#        instance_names: controller-0,controller-1,controller-2
+#        service_account_email: "{{ service_account_email }}"
+#        credentials_file: "{{ credentials_file }}"
+#        project_id: "{{ project_id }}"
+#        zone: "{{ zone }}"
+#        machine_type: "{{ machine_type }}"
+#        disk_size: 200
+#        ip_forward: true
+#        image: "{{ image }}"
+#        service_account_permissions: compute-rw,storage-ro,service-management,service-control,logging-write,monitoring
+#        network: kubernetes-the-hard-way
+#        subnetwork: kubernetes
+#        tags: kubernetes-the-hard-way,controller
+#      register: gce
+#
+#    - name: Wait for SSH to come up
+#      wait_for: host={{ item.public_ip }} port=22 delay=10 connect_timeout=30
+#      with_items: "{{ gce.instance_data }}"
+#
+#    - name: Create Workers Instances
+#      gce:
+#        instance_names: worker-0,worker-1,worker-2
+#        service_account_email: "{{ service_account_email }}"
+#        credentials_file: "{{ credentials_file }}"
+#        project_id: "{{ project_id }}"
+#        zone: "{{ zone }}"
+#        machine_type: "{{ machine_type }}"
+#        disk_size: 200
+#        ip_forward: true
+#        image: "{{ image }}"
+#        service_account_permissions: compute-rw,storage-ro,service-management,service-control,logging-write,monitoring
+#        network: kubernetes-the-hard-way
+#        subnetwork: kubernetes
+#        tags: kubernetes-the-hard-way,worker
+#      register: gce
+#
+#    - name: Wait for SSH to come up
+#      wait_for: host={{ item.public_ip }} port=22 delay=10 connect_timeout=30
+#      with_items: "{{ gce.instance_data }}"

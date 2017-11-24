@@ -1,0 +1,11 @@
+---
+- name: 10 Configuring kubectl for Remote Access
+  hosts: localhost
+  gather_facts: no
+  vars:
+    - configuring_kubectl_path: scripts/configuring-kubectl
+
+  tasks:
+
+    - name: The Admin Kubernetes Configuration File
+      command: "bash {{ configuring_kubectl_path }}/configuring_kubectl.sh"

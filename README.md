@@ -830,3 +830,18 @@ Node экспортер будем запускать также в контей
 ## [Kubernetes the hard way](https://github.com/kelseyhightower/kubernetes-the-hard-way)
 
 Результаты прохождения в директории `microservices/kubernetes/kubernetes_the_hard_way`
+
+## Выполнение заания со звездочкой
+
+- `microservices/kubernetes/kubernetes_the_hard_way/ansible/inventory` - настроен GCE Dynamic Inventory
+- `microservices/kubernetes/kubernetes_the_hard_way/ansible/scripts` - действия из туториала в виде sh скриптов
+- `microservices/kubernetes/kubernetes_the_hard_way/ansible/sertificats` - директория, куда буду попадать полученные в процессе выполенения туториала сертификаты
+- `microservices/kubernetes/kubernetes_the_hard_way/ansible/main.yml` - запускает все используемые для туториала плайбуки.
+- `microservices/kubernetes/kubernetes_the_hard_way/ansible/14-cleanup.yml` - удаление всего, что создано в процессе прохождения туториала.
+
+Проверить:
+
+- `kubectl apply -f mongo-deployment.yml`
+- `kubectl apply -f post-deployment.yml`
+- `kubectl apply -f comment-deployment.yml`
+- `kubectl apply -f ui-deployment.yml`
