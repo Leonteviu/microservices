@@ -894,8 +894,8 @@ Node экспортер будем запускать также в контей
   $ kubectl config use-context context_name
   ```
 
-  > Таким образом kubectl конфигурируется для подключения к<br>
-  > разным кластерам, под разными пользователями.<br>
+> Таким образом kubectl конфигурируется для подключения к<br>
+> разным кластерам, под разными пользователями.<br>
 
 - $ `kubectl config current-context` - Текущий контекст
 
@@ -908,13 +908,17 @@ Node экспортер будем запускать также в контей
 > либо с помощью командной строки. Основные объекты - это<br>
 > ресурсы **Deployment**.<br>
 
+**Показано на примере UI. Post Comment - по аналогии**
+
 ##### Файлы:
 
 - `microservices/kubernetes/ui-deployment.yml`
+- `microservices/kubernetes/post-deployment.yml`
 
 ##### Команды:
 
 - $ `kubectl apply -f ui-deployment.yml` - Запустим в Minikube ui-компоненту
+
 - $ `kubectl get deployment` - Убедимся, что во 2,3,4 и 5 столбцах стоит число 3 (число реплик ui)
 
 > P.S. `kubectl apply -f <filename>`<br>
@@ -932,6 +936,20 @@ Node экспортер будем запускать также в контей
 >   полученное в результате выполнения предыдущей команды.<br>
 
 > Проверить, что UI работает, можно, зайдя в браузере на `http://localhost:8080`
+
+```
+$ kubectl apply -f post-deployment.yml
+$ kubectl apply -f comment-deployment.yml
+$ kubectl get pods --selector component=post
+$ kubectl get pods --selector component=comment
+
+Проверить, соответственно, для каждой из компонент:
+$ kubectl port-forward <pod-name> 8080:5000 - для сервиса Post
+$ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
+зайдя по адресу http://localhost:8080/healthcheck
+```
+
+> Порты для сервисов смотрим в microservices/prometheus/prometheus.yml
 
 ### Развернуть Kubernetes в GKE
 
