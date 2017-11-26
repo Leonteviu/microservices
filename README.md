@@ -901,6 +901,27 @@ Node экспортер будем запускать также в контей
 
 - $ `kubectl config get-contexts` - Список всех контекстов
 
+#### Запуск приложения
+
+> Для работы приложения в kubernetes, нам необходимо<br>
+> описать его желаемое состояние либо в YAML-манифестах,<br>
+> либо с помощью командной строки. Основные объекты - это<br>
+> ресурсы **Deployment**.<br>
+
+##### Файлы:
+
+- `microservices/kubernetes/ui-deployment.yml`
+
+##### Команды:
+
+- $ `kubectl apply -f ui-deployment.yml` - Запустим в Minikube ui-компоненту
+- $ `kubectl get deployment` - Убедимся, что во 2,3,4 и 5 столбцах стоит число 3 (число реплик ui)
+
+> P.S. `kubectl apply -f <filename>`<br>
+> может принимать не только отдельный файл, но и папку с ними.<br>
+> Например:<br>
+> `kubectl apply -f ./kube`<br>
+
 ### Развернуть Kubernetes в GKE
 
 #### Файлы:
