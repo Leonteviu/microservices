@@ -14,7 +14,7 @@ spec:
       component: comment
   template:
     metadata:
-      name: comment-pod
+      name: comment
       labels:
         app: reddit
         component: comment

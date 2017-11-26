@@ -14,7 +14,7 @@ spec:
       component: ui
   template:
     metadata:
-      name: ui-pod
+      name: ui
       labels:
         app: reddit
         component: ui

@@ -14,15 +14,11 @@ spec:
       component: mongo
   template:
     metadata:
-      name: mongo-pod
+      name: mongo
       labels:
         app: reddit
         component: mongo
     spec:
-      containers:
-      - image: mongo:3.2
-        name: mongo
-       spec:
       containers:
       - image: mongo:3.2
         name: mongo

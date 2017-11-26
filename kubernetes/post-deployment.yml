@@ -14,7 +14,7 @@ spec:
       component: post
   template:
     metadata:
-      name: post-pod
+      name: post
       labels:
         app: reddit
         component: post

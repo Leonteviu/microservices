@@ -957,6 +957,10 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 
 - `microservices/kubernetes/mongo-deployment.yml`
 
+- $ `$ kubectl apply -f mongo-deployment.yml`
+
+> Также примонтируем стандартный Volume для хранения данных вне контейнера (volumeMounts, volumes)
+
 ### Развернуть Kubernetes в GKE
 
 #### Файлы:
