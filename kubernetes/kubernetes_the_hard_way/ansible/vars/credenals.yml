@@ -1,0 +1,4 @@
+service_account_email: "521322188687-compute@developer.gserviceaccount.com"
+credentials_file: "/home/leontev_iu/.ssh/infra-credentials.json"
+project_id: "infra-179710"
+zone: "us-west1-c"

@@ -1,0 +1,26 @@
+---
+- name: 04 Provisioning a CA and Generating TLS Certificates
+  hosts: localhost
+  gather_facts: no
+  vars:
+    - certificate_authority_path: scripts/certificate_authority
+
+  tasks:
+
+    - name: Certificate Authority
+      command: "bash {{ certificate_authority_path }}/certificate_authority.sh"
+
+    - name: Client and Server Certificates
+      command: "bash {{ certificate_authority_path }}/client_and_server_certificates.sh"
+
+    - name: The Kubelet Client Certificates
+      command: "bash {{ certificate_authority_path }}/kubelet_client_certificates.sh"
+
+    - name: The kube-proxy Client Certificate
+      command: "bash {{ certificate_authority_path }}/kube-proxy_client_certificate.sh"
+
+    - name: The Kubernetes API Server Certificate
+      command: "bash {{ certificate_authority_path }}/kubernetes_API_server_certificate.sh"
+
+    - name: Distribute the Client and Server Certificates
+      command: "bash {{ certificate_authority_path }}/distribute_the_client_and_server_certificates.sh"

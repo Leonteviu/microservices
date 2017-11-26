@@ -1,0 +1,8 @@
+- name: The Kubernetes Frontend Load Balancer
+  hosts: localhost
+  gather_facts: no
+  vars:
+    - bootstrapping_the_kubernetes_control_plane_path: scripts/bootstrapping_the_kubernetes_control_plane
+  tasks:
+    - name:
+      command: "bash {{ bootstrapping_the_kubernetes_control_plane_path }}/load_balancer.sh"

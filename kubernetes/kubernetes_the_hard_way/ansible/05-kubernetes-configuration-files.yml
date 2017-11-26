@@ -1,0 +1,14 @@
+---
+- name: 05 Generating Kubernetes Configuration Files for Authentication
+  hosts: localhost
+  gather_facts: no
+  vars:
+    - kubernetes_configuration_files_path: scripts/kubernetes_configuration_files
+
+  tasks:
+
+    - name: Client Authentication Configs
+      command: "bash {{ kubernetes_configuration_files_path }}/client_authentication_configs.sh"
+
+    - name: Distribute the Kubernetes Configuration Files
+      command: "bash {{ kubernetes_configuration_files_path }}/distribute_the_kubernetes_configuration_files.sh"

@@ -1,0 +1,14 @@
+---
+- name: 09 Bootstrapping the Kubernetes Worker Nodes
+  hosts: tag_worker
+  gather_facts: no
+  vars:
+    - bootstrapping_worker_nodes_path: scripts/bootstrapping_worker_nodes
+
+  tasks:
+
+    - name: Copy sh-file for Provisioning a Kubernetes Worker Node
+      copy: src={{ bootstrapping_worker_nodes_path }}/bootstrapping_worker_nodes.sh dest=$HOME
+
+    - name: Provisioning a Kubernetes Worker Node
+      command: bash bootstrapping_worker_nodes.sh

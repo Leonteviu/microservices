@@ -1,0 +1,11 @@
+---
+- name: 06 Generating the Data Encryption Config and Key
+  hosts: localhost
+  gather_facts: no
+  vars:
+    - encryption_config_and_key_path: scripts/encryption_config_and_key
+
+  tasks:
+
+    - name: Generating the Data Encryption Config and Key
+      command: "bash {{ encryption_config_and_key_path }}/encryption_config_and_key.sh"

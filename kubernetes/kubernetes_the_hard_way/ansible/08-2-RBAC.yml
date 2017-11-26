@@ -1,0 +1,13 @@
+- name: 08-2 RBAC for Kubelet Authorization
+  hosts: controller-0
+  gather_facts: no
+  vars:
+    - bootstrapping_the_kubernetes_control_plane_path: scripts/bootstrapping_the_kubernetes_control_plane
+
+  tasks:
+
+    - name: Copy sh-file for RBAC for Kubelet Authorization
+      copy: src={{ bootstrapping_the_kubernetes_control_plane_path }}/RBAC.sh dest=$HOME
+
+    - name: RBAC for Kubelet Authorization
+      command: bash RBAC.sh

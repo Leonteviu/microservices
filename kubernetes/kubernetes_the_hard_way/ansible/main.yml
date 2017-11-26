@@ -1,0 +1,14 @@
+---
+#- include: 03-compute-resources.yml
+#- include: 04-certificate-authority.yml
+#- include: 05-kubernetes-configuration-files.yml
+#- include: 06-data-encryption-keys.yml
+- include: 07-bootstrapping-etcd.yml
+- include: 08-1-bootstrapping-kubernetes-controllers.yml
+- include: 08-3-load-balancer.yml
+- include: 08-2-RBAC.yml
+- include: 09-bootstrapping-kubernetes-workers.yml
+- include: 10-configuring-kubectl.yml
+- include: 11-pod-network-routes.yml
+- include: 12-dns-addon.yml
+- include: 13-smoke-test.yml

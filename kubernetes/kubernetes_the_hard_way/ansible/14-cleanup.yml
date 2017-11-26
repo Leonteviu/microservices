@@ -1,0 +1,11 @@
+---
+- name: Cleaning Up
+  hosts: localhost
+  gather_facts: no
+  vars:
+    - cleanup_path: scripts/cleaning_up
+    
+  tasks:
+
+    - name: Cleaning Up
+      command: "bash {{ cleanup_path }}/cleanup.sh"

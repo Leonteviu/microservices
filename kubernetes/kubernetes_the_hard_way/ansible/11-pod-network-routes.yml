@@ -1,0 +1,11 @@
+---
+- name: 11 Provisioning Pod Network Routes
+  hosts: localhost
+  gather_facts: no
+  vars:
+    - pod_network_routes_path: scripts/pod_network_routes
+
+  tasks:
+
+    - name: The Admin Kubernetes Configuration File
+      command: "bash {{ pod_network_routes_path }}/pod_network_routes.sh"

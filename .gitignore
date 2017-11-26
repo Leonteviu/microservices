@@ -9,3 +9,7 @@ build_info.txt
 
 # my docker-compose.yml (use leter)
 docker-compose.yml.my
+
+# Kubernetes
+.pem
+.retry

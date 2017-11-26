@@ -1,0 +1,11 @@
+---
+- name: 13 Smoke Test
+  hosts: localhost
+  gather_facts: no
+  vars:
+    - smoke_test_path: scripts/smoke_test
+
+  tasks:
+
+    - name: Smoke Test
+      command: "bash {{ smoke_test_path }}/smoke_test.sh"

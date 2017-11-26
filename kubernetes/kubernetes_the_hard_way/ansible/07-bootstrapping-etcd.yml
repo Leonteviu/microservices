@@ -1,0 +1,14 @@
+---
+- name: 07 Bootstrapping the etcd Cluster
+  hosts: tag_controller
+  gather_facts: no
+  vars:
+    - bootstrapping_the_etcd_cluster_path: scripts/bootstrapping_the_etcd_cluster
+
+  tasks:
+
+    - name: Copy sh-file for Bootstrapping the etcd Cluster
+      copy: src={{ bootstrapping_the_etcd_cluster_path }}/bootstrapping_an_etcd_cluster_member.sh dest=$HOME
+
+    - name: Bootstrapping the etcd Cluster
+      command: bash bootstrapping_an_etcd_cluster_member.sh
