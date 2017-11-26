@@ -903,6 +903,8 @@ Node экспортер будем запускать также в контей
 
 #### Запуск приложения
 
+##### UI, POST, COMMENT
+
 > Для работы приложения в kubernetes, нам необходимо<br>
 > описать его желаемое состояние либо в YAML-манифестах,<br>
 > либо с помощью командной строки. Основные объекты - это<br>
@@ -950,6 +952,10 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 ```
 
 > Порты для сервисов смотрим в microservices/prometheus/prometheus.yml
+
+##### MongoDB
+
+- `microservices/kubernetes/mongo-deployment.yml`
 
 ### Развернуть Kubernetes в GKE
 
