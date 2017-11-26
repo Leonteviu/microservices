@@ -991,8 +991,8 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 - $ `kubectl exec -ti <pod-name> ping post`
 - $ `kubectl exec -ti <pod-name> ping comment` (nslookup в данном случае отрабатывать не будет, так как image Comment создан на основе ruby, не содержащей в себе команду `nslookup`)
 
-> Если посмотреть логи, например, comment (`kubectl logs <comment-POD-name>`), то можно увиеть, что приложение ищет совсем другой адрес: comment_db, а не<br>
-> mongodb. Аналогично и сервис post ищет post_db.<br>
+> Если посмотреть логи, например, comment (`kubectl logs <comment-POD-name>`), то можно увиеть, что приложение ищет совсем другой адрес: comment_db, а не mongodb.<br>
+> Аналогично и сервис post ищет post_db.<br>
 > Эти адреса заданы в их Dockerfile-ах в виде переменных окружения:
 
 > > post/Dockerfile<br>
@@ -1002,6 +1002,15 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 > > comment/Dockerfile<br>
 > > ...<br>
 > > ENV COMMENT_DATABASE_HOST=comment_db<br>
+
+> Решить эту проблему можно созданием еще одного сервиса сервиса для БД comment
+
+- `comment-mongodb-service.yml`
+
+> name: comment-db - так как в имени нельзя использовать знак подчеркиваниия<br>
+> также добавим метку, чтобы различать сервисы и лейбл comment-db: "true"<br>
+
+- $ `kubectl apply -f comment-mongodb-service.yml`
 
 ### Развернуть Kubernetes в GKE
 
