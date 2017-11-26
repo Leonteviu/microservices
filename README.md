@@ -852,11 +852,11 @@ Node экспортер будем запускать также в контей
 
 ## План
 
-- Развернуть локальное окружение для работы с Kubernetes
-- Развернуть Kubernetes в GKE
-- Запустить reddit в Kubernetes
+1. Развернуть локальное окружение для работы с Kubernetes
+2. Развернуть Kubernetes в GKE
+3. Запустить reddit в Kubernetes
 
-### Развернуть локальное окружение для работы с Kubernetes
+### 1\. Развернуть локальное окружение для работы с Kubernetes
 
 > Для дальнейшей работы нам нужно подготовить локальное окружение, которое будет состоять из:<br>
 
@@ -901,9 +901,9 @@ Node экспортер будем запускать также в контей
 
 - $ `kubectl config get-contexts` - Список всех контекстов
 
-#### Запуск приложения
+#### 1.1 Запуск приложения
 
-##### UI, POST, COMMENT
+##### 1.1.1 UI, POST, COMMENT
 
 > Для работы приложения в kubernetes, нам необходимо<br>
 > описать его желаемое состояние либо в YAML-манифестах,<br>
@@ -912,12 +912,13 @@ Node экспортер будем запускать также в контей
 
 **Показано на примере UI. Post Comment - по аналогии**
 
-##### Файлы:
+###### Файлы:
 
 - `microservices/kubernetes/ui-deployment.yml`
 - `microservices/kubernetes/post-deployment.yml`
+- `microservices/kubernetes/comment-deployment.yml`
 
-##### Команды:
+###### Команды:
 
 - $ `kubectl apply -f ui-deployment.yml` - Запустим в Minikube ui-компоненту
 
@@ -951,15 +952,36 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 зайдя по адресу http://localhost:8080/healthcheck
 ```
 
-> Порты для сервисов смотрим в microservices/prometheus/prometheus.yml
+> 5000 - это дефолт порт Python-фреймворка flask для веб-сервера, на нем написан Post<br>
+> Comment написан на ruby-фреймворке, у которого 9292-дефолт порт<br>
 
-##### MongoDB
+##### 1.1.2 MongoDB
 
 - `microservices/kubernetes/mongo-deployment.yml`
 
 - $ `$ kubectl apply -f mongo-deployment.yml`
 
 > Также примонтируем стандартный Volume для хранения данных вне контейнера (volumeMounts, volumes)
+
+##### 1.1.3 Services
+
+> В текущем состоянии приложение не будет работать, так его компоненты не ещё знают, как найти друг друга<br>
+> Для связи компонент между собой и с внешним миром используется объект **Service** - абстракция, которая<br>
+> определяет набор POD-ов (Endpoints) и способ доступа к ним<br>
+
+###### Файлы:
+
+- `microservices/kubernetes/post-service.yml`
+
+###### Команды:
+
+- $ `kubectl apply -f post-service.yml`
+- $ `kubectl describe service post | grep Endpoints` - Посмотреть по label-ам соответствующие POD-ы
+
+Также изнутри любого POD длжно разрешаться:
+
+- $ `kubectl get pods --selector component=post`
+- $ `kubectl exec -ti <pod-name> nslookup post`
 
 ### Развернуть Kubernetes в GKE
 
