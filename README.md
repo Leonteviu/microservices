@@ -972,16 +972,22 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 ###### Файлы:
 
 - `microservices/kubernetes/post-service.yml`
+- `microservices/kubernetes/comment-service.yml`
 
 ###### Команды:
 
 - $ `kubectl apply -f post-service.yml`
+- $ `kubectl apply -f comment-service.yml`
 - $ `kubectl describe service post | grep Endpoints` - Посмотреть по label-ам соответствующие POD-ы
+- $ `kubectl describe service comment | grep Endpoints`
 
 Также изнутри любого POD длжно разрешаться:
 
 - $ `kubectl get pods --selector component=post`
-- $ `kubectl exec -ti <pod-name> nslookup post`
+- $ `kubectl get pods --selector component=comment`
+- $ `kubectl exec -ti <pod-name> nslookup post` или
+- $ `kubectl exec -ti <pod-name> ping post`
+- $ `kubectl exec -ti <pod-name> ping comment` (nslookup в данном случае отрабатывать не будет, так как image Comment создан на основе ruby, не содержащей в себе команду `nslookup`)
 
 ### Развернуть Kubernetes в GKE
 
