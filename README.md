@@ -845,3 +845,70 @@ Node экспортер будем запускать также в контей
 - `kubectl apply -f post-deployment.yml`
 - `kubectl apply -f comment-deployment.yml`
 - `kubectl apply -f ui-deployment.yml`
+
+# Homework 28 (branch kubernetes-2)
+
+> Все ниже описанное, предполагает использование LINUX
+
+## План
+
+- Развернуть локальное окружение для работы с Kubernetes
+- Развернуть Kubernetes в GKE
+- Запустить reddit в Kubernetes
+
+### Развернуть локальное окружение для работы с Kubernetes
+
+> Для дальнейшей работы нам нужно подготовить локальное окружение, которое будет состоять из:<br>
+
+> - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - фактически, главной утилиты для работы c Kubernetes API (все, что делает kubectl,<br>
+>   можно сделать с помощью HTTP-запросов > к API k8s)<br>
+
+> - Директории ~>/.kube - содержит служебную инфу для kubectl (конфиги, кеши, схемы API)<br>
+
+> - minikube - утилиты для разворачивания локальной инсталляции Kubernetes.<br>
+>   (Для работы Minukube вам понадобится локальный гипервизор, например, [VirtualBox](https://www.virtualbox.org/wiki/Downloads))<br>
+>   minikube устанавливается командой:<br>
+>   `curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.23.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/`
+
+#### Файлы:
+
+- `~/.kube/config` - хранит информацию о контекстах kubectl
+
+#### Команды:
+
+- $ `minikube start` - запусить наш миникластер
+
+- $ `kubectl get nodes` - проверить, что Minikube-кластер развернут
+
+  ```
+  Порядок конфигурирования kubectl следующий:
+  1) Создать cluster :
+  $ kubectl config set-cluster ... cluster_name
+  2) Создать данные пользователя (credentials)
+  $ kubectl config set-credentials ... user_name
+  3) Создать контекст
+  $ kubectl config set-context context_name \
+  --cluster=cluster_name \
+  --user=user_name
+  4) Использовать контекст
+  $ kubectl config use-context context_name
+  ```
+
+  > Таким образом kubectl конфигурируется для подключения к<br>
+  > разным кластерам, под разными пользователями.<br>
+
+- $ `kubectl config current-context` - Текущий контекст
+
+- $ `kubectl config get-contexts` - Список всех контекстов
+
+### Развернуть Kubernetes в GKE
+
+#### Файлы:
+
+#### Команды:
+
+### Запустить reddit в Kubernetes
+
+#### Файлы:
+
+#### Команды:
