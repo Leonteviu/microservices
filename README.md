@@ -846,7 +846,7 @@ Node экспортер будем запускать также в контей
 - `kubectl apply -f comment-deployment.yml`
 - `kubectl apply -f ui-deployment.yml`
 
-# Homework 28 (branch kubernetes-2)
+# Homework 29 (branch kubernetes-2)
 
 > Все ниже описанное, предполагает использование LINUX
 
@@ -973,21 +973,35 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 
 - `microservices/kubernetes/post-service.yml`
 - `microservices/kubernetes/comment-service.yml`
+- `microservices/kubernetes/mongodb-service.yml`
 
 ###### Команды:
 
 - $ `kubectl apply -f post-service.yml`
 - $ `kubectl apply -f comment-service.yml`
+- $ `kubectl apply -f mongodb-service.yml`
 - $ `kubectl describe service post | grep Endpoints` - Посмотреть по label-ам соответствующие POD-ы
 - $ `kubectl describe service comment | grep Endpoints`
 
-Также изнутри любого POD длжно разрешаться:
+Также изнутри любого POD должно разрешаться:
 
 - $ `kubectl get pods --selector component=post`
 - $ `kubectl get pods --selector component=comment`
 - $ `kubectl exec -ti <pod-name> nslookup post` или
 - $ `kubectl exec -ti <pod-name> ping post`
 - $ `kubectl exec -ti <pod-name> ping comment` (nslookup в данном случае отрабатывать не будет, так как image Comment создан на основе ruby, не содержащей в себе команду `nslookup`)
+
+> Если посмотреть логи, например, comment (`kubectl logs <comment-POD-name>`), то можно увиеть, что приложение ищет совсем другой адрес: comment_db, а не<br>
+> mongodb. Аналогично и сервис post ищет post_db.<br>
+> Эти адреса заданы в их Dockerfile-ах в виде переменных окружения:
+
+> > post/Dockerfile<br>
+> > ...<br>
+> > ENV POST_DATABASE_HOST=post_db<br>
+
+> > comment/Dockerfile<br>
+> > ...<br>
+> > ENV COMMENT_DATABASE_HOST=comment_db<br>
 
 ### Развернуть Kubernetes в GKE
 
