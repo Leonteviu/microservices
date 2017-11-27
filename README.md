@@ -1003,7 +1003,7 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 > > ...<br>
 > > ENV COMMENT_DATABASE_HOST=comment_db<br>
 
-> Решить эту проблему можно созданием еще одного сервиса сервиса для БД comment
+Решить эту проблему можно созданием еще одного сервиса сервиса для БД comment
 
 - `comment-mongodb-service.yml`
 
@@ -1012,7 +1012,7 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 
 - $ `kubectl apply -f comment-mongodb-service.yml`
 
-Придется обновить файл deployment для mongodb (mongo-deployment.yml), добавив `comment-db: "true"`, чтобы новый Service смог найти нужный POD
+Обновим файл deployment для mongodb (mongo-deployment.yml), добавив `comment-db: "true"`, чтобы новый Service смог найти нужный POD
 
 - $ `kubectl apply -f mongo-deployment.yml`
 
@@ -1025,12 +1025,25 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 В результате сервис **mongodb** (файл mongodb-service.yml) стал не нужен. Можно его удалить.
 
 - $ `kubectl delete -f mongodb-service.yml`<br>
-  или<br>
 
-- $ `kubectl delete service mongodb`
+или<br>
+
+- $ `kubectl delete service mongodb`<br>
 
 > Проверить работу приложения можно, пробросив порты на сервисе UI<br>
 > kubectl port-forward **ui_pod-name** 8080:9292<br>
+
+Организуем доступ к сервису UI снаружи:
+
+- `ui-service.yml` - сервис для доступа к UI
+
+> Теперь до сервиса можно дойти по Node-IP:NodePort<br>
+> Node-IP можно узнать:<br>
+
+> - $ `kubectl describe nodes`<br>
+
+> NodePort - для доступа снаружи кластера<br>
+> port - для доступа к сервису изнутри кластера<br>
 
 ### Развернуть Kubernetes в GKE
 
