@@ -1016,6 +1016,22 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 
 - $ `kubectl apply -f mongo-deployment.yml`
 
+По аналогии - для сервиса Post:
+
+- `post-mongodb-service.yml` - создали сервис для ДБ post
+- `post-deployment.yml` - Зададим pod-ам post переменную окружения для обращения к базе
+- `mongo-deployment.yml` - обновили, тобы новый Service post-db смог найти нужный POD
+
+В результате сервис **mongodb** (файл mongodb-service.yml) стал не нужен. Можно его удалить.
+
+- $ `kubectl delete -f mongodb-service.yml`<br>
+  или<br>
+
+- $ `kubectl delete service mongodb`
+
+> Проверить работу приложения можно, пробросив порты на сервисе UI<br>
+> kubectl port-forward **ui_pod-name** 8080:9292<br>
+
 ### Развернуть Kubernetes в GKE
 
 #### Файлы:
