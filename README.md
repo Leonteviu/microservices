@@ -1067,6 +1067,16 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 
 - $ `minikube service kubernetes-dashboard -n kube-system` - Зайдем в Dashboard
 
+##### 1.2.2 Отделим среду для разработки приложения от всего остального кластера. (Namespace dev)
+
+Создадим Namespace dev:
+
+- `dev-namespace.yml`
+- $ `kubectl apply -f dev-namespace.yml`
+- `ui-deployment.yml` - добавили информацию об окружении DEV
+- $ `kubectl apply -n dev -f .` - запусить приложение в DEV
+- $ `minikube service ui -n dev` - посмотреть результат
+
 ### Развернуть Kubernetes в GKE
 
 #### Файлы:
