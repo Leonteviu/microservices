@@ -1012,6 +1012,10 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 
 - $ `kubectl apply -f comment-mongodb-service.yml`
 
+Придется обновить файл deployment для mongodb (mongo-deployment.yml), добавив `comment-db: "true"`, чтобы новый Service смог найти нужный POD
+
+- $ `kubectl apply -f mongo-deployment.yml`
+
 ### Развернуть Kubernetes в GKE
 
 #### Файлы:
