@@ -1045,6 +1045,28 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 > NodePort - для доступа снаружи кластера<br>
 > port - для доступа к сервису изнутри кластера<br>
 
+#### 1.2 Minikube
+
+- $ `minikube service ui` - выдать web-странцы с сервисами которые были помечены типом NodePort
+- $ `minikube service list` - Посмотреть на список сервисов
+- $ `minikube addons list` - получить список аддонов (расширений) для Kubernetes
+
+##### 1.2.1 Namespace
+
+> При старте Kubernetes кластер уже имеет 3 namespace:<br>
+> • default - для объектов для которых не определен другой Namespace (в нем мы работали все это время)<br>
+> • kube-system - для объектов созданных Kubernetes'ом и для управления им<br>
+> • kube-public - для объектов к которым нужен доступ из любой точки кластера<br>
+
+> Рассмотрим на примере аддон - dashboard:
+
+- $ `minikube addons enable dashboard` - включить dashboard
+- $ `kubectl get all -n kube-system --selector app=kubernetes-dashboard` - Найдем же объекты нашего dashboard
+
+> Мы вывели все объекты из неймспейса kube-system, имеющие label app=kubernetes-dashboard
+
+- $ `minikube service kubernetes-dashboard -n kube-system` - Зайдем в Dashboard
+
 ### Развернуть Kubernetes в GKE
 
 #### Файлы:
