@@ -1084,6 +1084,33 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 - $ `kubectl proxy`
 - `http://localhost:8001/ui`
 
+## 2\. Развернуть Kubernetes в GKE
+
+Пунк выполняется в GKE в вэб-интерфейсе
+
+## 3\. Запустить reddit в Kubernetes в GKE
+
+### Файлы:
+
+YAML-манифсты разнес по соответствующим директориям:
+
+- `microservices/kubernetes/app` - приложение
+- `microservices/kubernetes/namespaces` - создание namespaces (в нашем случае создается namespace `dev`)
+
+### Команды:
+
+После создания кластера:
+
+- $ `gcloud container clusters get-credentials cluster-1 --zone us-central1-a --project infra-179710` - команда примерно такого вида для подключения к нашему кластеру (можно узнать команду в Kubernetes Engine -> Кластеры Kubenetes -> кнопка "Подключиться")
+- $ `kubectl apply -f ./namespaces/` - создадим namespace `dev`
+- $ `kubectl apply -f ./app/ -n dev` - поднимем наше приложение в созданном namespace `dev`
+
+Наше приложение будет доступно по любому из EXTERNAL-IP Node (адрес можно узнать командой `kubectl get nodes -o wide`):
+
+```
+EXTERNAL-IP:32092    # Порт указан в `microservices/kubernetes/app/ui-service.yml` в параметре `nodePort`
+```
+
 ## Задание со звездочкой
 
 ### 1\. Разверните Kubenetes-кластер в GKE с помощью [Terraform модуля](https://www.terraform.io/docs/providers/google/r/container_cluster.html)
@@ -1094,3 +1121,15 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 - $ `terraform plan`
 - $ `terraform apply`
 - $ `terraform destroy`
+
+### 2\. Создайте YAML-манифесты для описания созданных сущностей для включения dashboard.
+
+> Использовался [материал](https://github.com/kubernetes/dashboard/blob/master/src/deploy/alternative/kubernetes-dashboard.yaml)
+
+- `microservices/kubernetes/dashboard/dashboard_service_account.yml`
+- `microservices/kubernetes/dashboard/dashboard_cluster_role_binding(rbac).yml`
+- `microservices/kubernetes/dashboard/dashboard-deployment.yml`
+- `microservices/kubernetes/dashboard/dashboard_service.yml`
+- $ `kubectl apply -f ./dashboard/`
+- $ `kubectl proxy`
+- $ `kubectl delete -f ./dashboard/`

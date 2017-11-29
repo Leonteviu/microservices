@@ -16,5 +16,5 @@ docker-compose.yml.my
 
 # Terraform
 .terraform
-.tfstate
-.backup
+*.tfstate
+*.backup
