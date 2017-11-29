@@ -1083,3 +1083,14 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 - $ `kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard` - назначим cluster-admin роль service account-у dashboard-а
 - $ `kubectl proxy`
 - `http://localhost:8001/ui`
+
+## Задание со звездочкой
+
+### 1\. Разверните Kubenetes-кластер в GKE с помощью [Terraform модуля](https://www.terraform.io/docs/providers/google/r/container_cluster.html)
+
+- `microservices/kubernetes/terraform/main.tf`
+- `microservices/kubernetes/terraform/create_cluster.tf`
+- `microservices/kubernetes/terraform/variables.tf`
+- $ `terraform plan`
+- $ `terraform apply`
+- $ `terraform destroy`
