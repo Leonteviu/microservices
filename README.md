@@ -1076,3 +1076,10 @@ $ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
 - `ui-deployment.yml` - добавили информацию об окружении DEV
 - $ `kubectl apply -n dev -f .` - запусить приложение в DEV
 - $ `minikube service ui -n dev` - посмотреть результат
+
+### В GKE также можно запустить Dashboard для кластера.
+
+- $ `kubectl create sa kubernetes-dashboard -n kube-system` - Добавим в систему Service Account для дашборда в namespace kube-system (там же запущен dashboard)
+- $ `kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard` - назначим cluster-admin роль service account-у dashboard-а
+- $ `kubectl proxy`
+- `http://localhost:8001/ui`
