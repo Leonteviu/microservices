@@ -1136,3 +1136,74 @@ EXTERNAL-IP:32092    # Порт указан в `microservices/kubernetes/app/ui
 - $ `kubectl apply -f ./dashboard/`
 - $ `kubectl proxy`
 - $ `kubectl delete -f ./dashboard/`
+
+# Homework 30 (branch kubernetes-3)
+
+## План
+
+- Ingress Controller
+- Ingress
+- Secret
+- TLS
+- LoadBalancer Service
+- StatefulSet
+- Network Policies
+- PersistentVolumes
+- PersistentVolumeClaims
+- StorageLimits
+
+## Необходимо
+
+Поднять наше приложение в среде `DEV`
+
+- $ `terraform apply` - развернем кластер
+- $ `gcloud container clusters get-credentials cluster-1 --zone us-central1-a --project infra-179710` - настроим возможность подключения к нашему кластеру (команда берется из "Подклчиться" в "Кластеры Kubernetes")
+- $ `kubectl apply -f ./namespaces` - создадим окружение `DEV`
+- $ `kubectl apply -f ./app -n dev` - поднимем наше прилоежение в окружении `DEV` (проверить работоспособность можно, перейдя по адресу <http://IP_одной_из_VM_кластера:32092/>. В данном случае используется **nodePort** (см. ниже))
+
+--------------------------------------------------------------------------------
+
+Немного теории:
+
+```
+Типы Service (обеспечивают сетевое взаимодействие с приложением в Kubernetes):
+
+- ClusterIP - дойти до сервиса можно только изнутри кластера (kubectl get services -n dev)
+- nodePort - клиент снаружи кластера приходит на опубликованный порт
+- LoadBalancer - клиент приходит на облачный (aws elb, Google gclb) ресурс балансировки
+- ExternalName - внешний ресурс по отношению к кластеру
+```
+
+### LoadBalancer
+
+```
+Тип LoadBalancer позволяет нам использовать внешний облачный балансировщик нагрузки, как единую
+точку входа в наши сервисы, а не полагаться на IPTables и не открывать наружу весь кластер.
+
+Балансировка с помощью Service типа LoadBalancing имеет ряд недостатков:
+- нельзя управлять с помощью http URI (L7-балансировка)
+- используются только облачные балансировщики (AWS, GCP)
+- нет гибких правил работы с трафиком
+```
+
+#### Файлы:
+
+`ui-service.yml`
+
+```
+type: LoadBalancer
+port: 80 - Порт, который будет открыт на балансировщике
+nodePort: 32092 - Также на ноде будет открыт порт, но нам он не нужен (его мы убрали)
+targetPort: 9292 - Порт POD-а
+```
+
+#### Команды:
+
+- $ `kubectl apply -f ui-service.yml -n dev`
+- $ `kubectl get service -n dev --selector component=ui` - посмотрим на наш сервис UI (нас интересует EXTERNAL-IP и PORT)
+
+  ```
+  Провери работу приложения можно перейдя по адресу http://<EXTERNAL-IP>:PORT, в нашем случае, так как порт 80, то http://<EXTERNAL-IP>
+  ```
+
+> Будет создано правило для балансировки (GCP - Сетевые сервисы - Балансировка нагрузки)
