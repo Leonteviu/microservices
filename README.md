@@ -1260,4 +1260,16 @@ Ingress Controller - это скорее плагин (а значит и отд
 
 1-й http://EXTERNAL-IP:80 (EXTERNAL-IP узнаем из вывода команды   kubectl get service -n dev --selector component=ui) - LoadBalancer
 2-й http://ip_address_ingress:80 (ip_address_ingress узнаем из вывода команды   kubectl get ingress -n dev) - Ingress
+
+Вместе с этим мы не умеем управлять трафиком на уровне HTTP
 ```
+
+Оставим один балансировщик, для этого:
+
+1.\ внесем изменения в `ui-service.yml` и переконфигурируем сервис для UI
+
+- $ `kubectl apply -f ui-service.yml -n dev`
+
+2.\ Заставим работать Ingress Controller как классический веб, внеся изменения в `ui-ingress.yml`
+
+- $ `kubectl apply -f ui-ingress.yml -n dev`
