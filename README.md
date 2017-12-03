@@ -1240,7 +1240,7 @@ Ingress Controller - это скорее плагин (а значит и отд
 
 `ui-ingress.yml`
 
-**Обратим внимание, что servicePort в ui-ingress.yml должен совпадать с port, указанным в ui-service.yml**
+**! Обратим внимание, что servicePort в ui-ingress.yml должен совпадать с port, указанным в ui-service.yml**
 
 ### Команды:
 
@@ -1273,3 +1273,12 @@ Ingress Controller - это скорее плагин (а значит и отд
 2.\ Заставим работать Ingress Controller как классический веб, внеся изменения в `ui-ingress.yml`
 
 - $ `kubectl apply -f ui-ingress.yml -n dev`
+
+## Secret. Защитим наш сервис с помощью TLS.
+
+### Необходимо
+
+- $ `kubectl get ingress -n dev` - узнаем Ingress IP
+- $ `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=<Ingress_IP>"` - подготовим сертификат используя IP как CN
+- $ `kubectl create secret tls ui-ingress --key tls.key --cert tls.crt -n dev` - загрузим сертификат в кластер kubernetes
+- $ `kubectl describe secret ui-ingress -n dev` - проверим
