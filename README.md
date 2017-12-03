@@ -1274,7 +1274,7 @@ Ingress Controller - это скорее плагин (а значит и отд
 
 - $ `kubectl apply -f ui-ingress.yml -n dev`
 
-## Secret. Защитим наш сервис с помощью TLS.
+## Secret. Защитим наш сервис с помощью TLS (TLS Termination).
 
 ### Необходимо
 
@@ -1282,3 +1282,30 @@ Ingress Controller - это скорее плагин (а значит и отд
 - $ `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=<Ingress_IP>"` - подготовим сертификат используя IP как CN
 - $ `kubectl create secret tls ui-ingress --key tls.key --cert tls.crt -n dev` - загрузим сертификат в кластер kubernetes
 - $ `kubectl describe secret ui-ingress -n dev` - проверим
+
+### Настроим Ingress на прием только HTTPS трафика
+
+Откорректирум `ui-ingress.yml`:
+
+```
+annotations:
+  kubernetes.io/ingress.allow-http: "false"    <- Отключаем проброс HTTP
+
+tls:
+- secretName: ui-ingress    <- Подключаем наш сертификат
+```
+
+- $ `kubectl delete -f ui-ingress.yml -n dev` - применим изменения в `ui-ingress.yml`
+- $ `kubectl apply -f ui-ingress.yml -n dev` - применим изменения в `ui-ingress.yml`
+
+> Зайдем на страницу [web console](https://console.cloud.google.com/net-services/loadbalancing/loadBalancers/list) и увидим в описании нашего балансировщика только один протокол HTTPS<br>
+> Иногда протокол HTTP может не удалиться у существующего Ingress правила, тогда нужно его<br>
+> вручную удалить и пересоздать
+
+```
+Заходим на страницу нашего приложения по https
+(https://Ingress_IP, узнать Ingress_IP - kubectl get ingress -n dev),
+подтверждаем исключение безопасности (у нас сертификат самоподписанный)
+и видим что все работает
+(возможно, придется некоторое время подождать)
+```
