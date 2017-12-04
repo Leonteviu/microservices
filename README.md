@@ -1525,3 +1525,48 @@ volumes:
 ### Команды:
 
 - $ `kubectl apply -f mongo-deployment.yml -n dev`
+
+## StorageClass
+
+```
+Создав PersistentVolume мы отделили объект "хранилища" от
+наших Service'ов и Pod'ов. Теперь мы можем его при
+необходимости переиспользовать.
+Но нам гораздо интереснее создавать хранилища при
+необходимости и в автоматическом режиме. В этом нам помогут
+StorageClass’ы. Они описывают где (какой провайдер) и какие
+хранилища создаются.
+В нашем случае создадим StorageClass Fast так, чтобы
+монтировались SSD-диски для работы нашего хранилища.
+```
+
+### Файлы:
+
+- `storage-fast.yml` - описание StorageClass'а
+- `storage-slow.yml` - описание StorageClass'а
+- `mongo-claim-dynamic.yml` - описание PersistentVolumeClaim
+
+```
+...
+storageClassName: slow  <- Вместо ссылки на созданный диск, теперь мы ссылаемся на StorageClass
+...
+```
+
+- `mongo-deployment.yml` - Подключим PVC к нашим Pod'ам
+
+```
+...
+claimName: mongo-pvc-dynamic       <- Обновим PersistentVolumeClaim
+```
+
+### Команды:
+
+- $ `kubectl apply -f storage-fast.yml -n dev` - Добавим StorageClass в кластер
+- $ `kubectl apply -f storage-slow.yml -n dev` - Добавим StorageClass в кластер
+- $ `kubectl apply -f mongo-claim-dynamic.yml -n dev` - Добавим StorageClass в кластер
+- $ `kubectl apply -f mongo-deployment.yml -n dev` - Обновим описание нашего Deployment'а
+
+> Чтобы посмотреть, какие в итоге у нас получились PersistentVolume'ы<br>
+> `kubectl get persistentvolume -n dev`
+
+> На созданные Kubernetes'ом диски можно посмотреть в [web console](https://console.cloud.google.com/compute/disks)
