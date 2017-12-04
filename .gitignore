@@ -24,4 +24,4 @@ docker-compose.yml.my
 *.crt
 *.key
 
-ui-secret.yml
+ui-secret.yml_
