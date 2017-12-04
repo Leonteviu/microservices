@@ -1427,3 +1427,33 @@ $ kubectl apply -f mongo-deployment.yml -n dev
 ```
 
 > [Здесь](https://console.cloud.google.com/compute/disks) можно посмотреть на созданный диск и увидеть какой машиной он используется
+
+## PersistentVolume
+
+```
+Используемый механизм Volume-ов можно сделать удобнее.
+Мы можем использовать не целый выделенный диск для
+каждого пода, а целый ресурс хранилища, общий для всего
+кластера.
+Тогда при запуске Stateful-задач в кластере, мы сможем
+запросить хранилище в виде такого же ресурса, как CPU или
+оперативная память.
+Для этого будем использовать механизм PersistentVolume.
+```
+
+### Файлы:
+
+- `mongo-volume.yml` - описание PersistentVolume
+
+```
+...
+name: reddit-mongo-disk        <- Имя PersistentVolume'а
+...
+pdName: "reddit-mongo-disk"    <- Имя диска в GCE
+```
+
+### Команды:
+
+- $ `kubectl apply -f mongo-volume.yml -n dev` - Добавим PersistentVolume в кластер
+
+> Создали PersistentVolume в виде диска в GCP.

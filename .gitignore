@@ -15,6 +15,7 @@ docker-compose.yml.my
 .retry
 
 # Terraform
+terraform/
 .terraform
 *.tfstate
 *.backup
