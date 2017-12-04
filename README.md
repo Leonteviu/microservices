@@ -1454,6 +1454,56 @@ pdName: "reddit-mongo-disk"    <- Имя диска в GCE
 
 ### Команды:
 
-- $ `kubectl apply -f mongo-volume.yml -n dev` - Добавим PersistentVolume в кластер
+- $ `kubectl apply -f mongo-volume.yml -n dev` - Добавим ресурс дискового хранилища, распространенный на весь кластер, в виде PersistentVolume
 
 > Создали PersistentVolume в виде диска в GCP.
+
+## PersistentVolumeClaim
+
+```
+Мы создали ресурс дискового хранилища,
+распространенный на весь кластер, в виде PersistentVolume.
+
+Чтобы выделить приложению часть ресурса PersistentVolume,
+нужно создать запрос на выдачу - PersistentVolumeClaim.
+
+Claim - это именно запрос, а не само хранилище.
+
+С помощью запроса можно выделить место как из
+конкретного PersistentVolume (тогда параметры
+accessModes и StorageClass должны соответствовать, а
+места должно хватать), так и просто создать отдельный
+PersistentVolume под конкретный запрос.
+```
+
+### Файлы:
+
+- `mongo-claim.yml` - описание PersistentVolumeClaim (PVC)
+
+```
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongo-pvc        <- Имя PersistentVolumeClame'а
+spec:
+  accessModes:
+    - ReadWriteOnce      <- accessMode у PVC и у PV должен совпадать
+  resources:
+    requests:
+      storage: 25Gi
+```
+
+### Команды:
+
+- $ `kubectl apply -f mongo-claim.yml -n dev` - Добавим PersistentVolumeClaim в кластер
+
+> Мы выделили место в PV по запросу для нашей базы.<br>
+> Одновременно использовать один PV можно только по<br>
+> одному Claim'у<br>
+
+> Если Claim не найдет по заданным параметрам PV внутри<br>
+> кластера, либо тот будет занят другим Claim'ом<br>
+> то он сам создаст нужный ему PV воспользовавшись<br>
+> стандартным StorageClass.<br>
+> `kubectl describe storageclass standard -n dev`<br>
