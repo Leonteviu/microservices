@@ -1309,3 +1309,78 @@ tls:
 и видим что все работает
 (возможно, придется некоторое время подождать)
 ```
+
+## Network Policy
+
+```
+Хотелось бы разнести сервисы базы данных и сервис фронтенда по разным сетям,
+сделав их недоступными друг для друга.
+В Kubernetes у нас так сделать не получится с помощью отдельных сетей,
+так как все POD-ы могут достучаться друг до друга по-умолчанию.
+
+Мы будем использовать NetworkPolicy - инструмент для декларативного описания потоков трафика.
+Отметим, что не все сетевые плагины поддерживают политики сети.
+В частности, у GKE эта функция пока в Beta-тесте и для её работы отдельно будет включен
+сетевой плагин Calico (вместо Kubenet).
+```
+
+Наша задача - ограничить трафик, поступающий на mongodb отовсюду, кроме сервисов post и comment.
+
+### Файлы:
+
+- `mongo-network-policy.yml`
+
+```
+podSelector:
+  matchLabels:
+    app: reddit
+    component: mongo             Выбираем объекты политики (pod’ы с mongodb)
+
+policyTypes:                     Запрещаем все входящие подключения
+- Ingress                        Исходящие разрешены
+
+ingress:
+- from:
+  - podSelector:
+      matchLabels:
+        app: reddit              Разрешаем все входящие подключения от
+        component: comment       POD-ов с label-ами comment.
+```
+
+```
+Правила ингресса:
+ правило 1\. фильтры по адресанту (от кого идет трафик):
+   фильтр 1\. Все поды подходящие под условия:
+     условие 1\. Под обладает следующими лейблами:
+      лейбл 1\. app: reddit
+      лейбл 2\. component: comment
+
+и в данном случае между лейблом 1 и лейблом 2 стоит логическая операция И
+
+То есть для сервиса Post будет необходим еще один podSelector для него:
+
+ingress:
+- from:
+  - podSelector:
+      matchLabels:
+        app: reddit
+        component: comment
+  - podSelector:
+      matchLabels:
+        app: reddit
+        component: post
+```
+
+### Команды:
+
+- $ `gcloud beta container clusters list` - найдем имя нашего кластера
+
+Включим network-policy для GKE:
+
+- $ `gcloud beta container clusters update <cluster-name> --zone=us-central1-a --update-addons=NetworkPolicy=ENABLED`
+
+- $ `gcloud beta container clusters update <cluster-name> --zone=us-central1-a --enable-network-policy`
+
+> Вам может быть предложено добавить beta-функционал в gcloud - нажмите yes.
+
+- $ `kubectl apply -f mongo-network-policy.yml -n dev` - Применяем политику

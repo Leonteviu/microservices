@@ -23,3 +23,5 @@ docker-compose.yml.my
 #TLS Termination
 *.crt
 *.key
+
+ui-secret.yml
