@@ -1507,3 +1507,21 @@ spec:
 > то он сам создаст нужный ему PV воспользовавшись<br>
 > стандартным StorageClass.<br>
 > `kubectl describe storageclass standard -n dev`<br>
+
+## Подключим PVC к нашим Pod'ам
+
+### Файлы:
+
+- `mongo-deployment.yml`
+
+```
+.........
+volumes:
+- name: mongo-gce-pd-storage
+  persistentVolumeClaim:
+    claimName: mongo-pvc    <- Имя PersistentVolumeClame'а
+```
+
+### Команды:
+
+- $ `kubectl apply -f mongo-deployment.yml -n dev`
