@@ -845,3 +845,294 @@ Node экспортер будем запускать также в контей
 - `kubectl apply -f post-deployment.yml`
 - `kubectl apply -f comment-deployment.yml`
 - `kubectl apply -f ui-deployment.yml`
+
+# Homework 29 (branch kubernetes-2)
+
+> Все ниже описанное, предполагает использование LINUX
+
+## План
+
+1. Развернуть локальное окружение для работы с Kubernetes
+2. Развернуть Kubernetes в GKE
+3. Запустить reddit в Kubernetes
+
+### 1\. Развернуть локальное окружение для работы с Kubernetes
+
+> Для дальнейшей работы нам нужно подготовить локальное окружение, которое будет состоять из:<br>
+
+> - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) - фактически, главной утилиты для работы c Kubernetes API (все, что делает kubectl,<br>
+>   можно сделать с помощью HTTP-запросов > к API k8s)<br>
+
+> - Директории ~>/.kube - содержит служебную инфу для kubectl (конфиги, кеши, схемы API)<br>
+
+> - minikube - утилиты для разворачивания локальной инсталляции Kubernetes.<br>
+>   (Для работы Minukube вам понадобится локальный гипервизор, например, [VirtualBox](https://www.virtualbox.org/wiki/Downloads))<br>
+>   minikube устанавливается командой:<br>
+>   `curl -Lo minikube https://storage.googleapis.com/minikube/releases/v0.23.0/minikube-linux-amd64 && chmod +x minikube && sudo mv minikube /usr/local/bin/`
+
+#### Файлы:
+
+`~/.kube/config` - хранит информацию о контекстах kubectl
+
+#### Команды:
+
+- $ `minikube start` - запусить наш миникластер
+
+- $ `kubectl get nodes` - проверить, что Minikube-кластер развернут
+
+  ```
+  Порядок конфигурирования kubectl следующий:
+  1) Создать cluster :
+  $ kubectl config set-cluster ... cluster_name
+  2) Создать данные пользователя (credentials)
+  $ kubectl config set-credentials ... user_name
+  3) Создать контекст
+  $ kubectl config set-context context_name \
+  --cluster=cluster_name \
+  --user=user_name
+  4) Использовать контекст
+  $ kubectl config use-context context_name
+  ```
+
+> Таким образом kubectl конфигурируется для подключения к<br>
+> разным кластерам, под разными пользователями.<br>
+
+- $ `kubectl config current-context` - Текущий контекст
+
+- $ `kubectl config get-contexts` - Список всех контекстов
+
+#### 1.1 Запуск приложения
+
+##### 1.1.1 UI, POST, COMMENT
+
+> Для работы приложения в kubernetes, нам необходимо<br>
+> описать его желаемое состояние либо в YAML-манифестах,<br>
+> либо с помощью командной строки. Основные объекты - это<br>
+> ресурсы **Deployment**.<br>
+
+**Показано на примере UI. Post Comment - по аналогии**
+
+###### Файлы:
+
+- `microservices/kubernetes/ui-deployment.yml`
+- `microservices/kubernetes/post-deployment.yml`
+- `microservices/kubernetes/comment-deployment.yml`
+
+###### Команды:
+
+- $ `kubectl apply -f ui-deployment.yml` - Запустим в Minikube ui-компоненту
+
+- $ `kubectl get deployment` - Убедимся, что во 2,3,4 и 5 столбцах стоит число 3 (число реплик ui)
+
+> P.S. `kubectl apply -f <filename>`<br>
+> может принимать не только отдельный файл, но и папку с ними.<br>
+> Например:<br>
+> `kubectl apply -f ./kube`<br>
+
+> Пока что мы не можем использовать наше приложение<br>
+> полностью, потому что никак не настроена сеть для общения с ним.<br>
+> Но kubectl умеет пробрасывать сетевые порты POD-ов на локальную машину<br>
+> Найдем используя selector POD-ы приложения<br>
+
+> - $ `kubectl get pods --selector component=ui` -
+> - $ `kubectl port-forward <pod-name> 8080:9292` - pod-name - любое имя POD,<br>
+>   полученное в результате выполнения предыдущей команды.<br>
+
+> Проверить, что UI работает, можно, зайдя в браузере на `http://localhost:8080`
+
+```
+$ kubectl apply -f post-deployment.yml
+$ kubectl apply -f comment-deployment.yml
+$ kubectl get pods --selector component=post
+$ kubectl get pods --selector component=comment
+
+Проверить, соответственно, для каждой из компонент:
+$ kubectl port-forward <pod-name> 8080:5000 - для сервиса Post
+$ kubectl port-forward <pod-name> 8080:9292 - для сервиса Comment
+зайдя по адресу http://localhost:8080/healthcheck
+```
+
+> 5000 - это дефолт порт Python-фреймворка flask для веб-сервера, на нем написан Post<br>
+> Comment написан на ruby-фреймворке, у которого 9292-дефолт порт<br>
+
+##### 1.1.2 MongoDB
+
+- `microservices/kubernetes/mongo-deployment.yml`
+
+- $ `$ kubectl apply -f mongo-deployment.yml`
+
+> Также примонтируем стандартный Volume для хранения данных вне контейнера (volumeMounts, volumes)
+
+##### 1.1.3 Services
+
+> В текущем состоянии приложение не будет работать, так его компоненты не ещё знают, как найти друг друга<br>
+> Для связи компонент между собой и с внешним миром используется объект **Service** - абстракция, которая<br>
+> определяет набор POD-ов (Endpoints) и способ доступа к ним<br>
+
+###### Файлы:
+
+- `microservices/kubernetes/post-service.yml`
+- `microservices/kubernetes/comment-service.yml`
+- `microservices/kubernetes/mongodb-service.yml`
+
+###### Команды:
+
+- $ `kubectl apply -f post-service.yml`
+- $ `kubectl apply -f comment-service.yml`
+- $ `kubectl apply -f mongodb-service.yml`
+- $ `kubectl describe service post | grep Endpoints` - Посмотреть по label-ам соответствующие POD-ы
+- $ `kubectl describe service comment | grep Endpoints`
+
+Также изнутри любого POD должно разрешаться:
+
+- $ `kubectl get pods --selector component=post`
+- $ `kubectl get pods --selector component=comment`
+- $ `kubectl exec -ti <pod-name> nslookup post` или
+- $ `kubectl exec -ti <pod-name> ping post`
+- $ `kubectl exec -ti <pod-name> ping comment` (nslookup в данном случае отрабатывать не будет, так как image Comment создан на основе ruby, не содержащей в себе команду `nslookup`)
+
+> Если посмотреть логи, например, comment (`kubectl logs <comment-POD-name>`), то можно увиеть, что приложение ищет совсем другой адрес: comment_db, а не mongodb.<br>
+> Аналогично и сервис post ищет post_db.<br>
+> Эти адреса заданы в их Dockerfile-ах в виде переменных окружения:
+
+> > post/Dockerfile<br>
+> > ...<br>
+> > ENV POST_DATABASE_HOST=post_db<br>
+
+> > comment/Dockerfile<br>
+> > ...<br>
+> > ENV COMMENT_DATABASE_HOST=comment_db<br>
+
+Решить эту проблему можно созданием еще одного сервиса сервиса для БД comment
+
+- `comment-mongodb-service.yml`
+
+> name: comment-db - так как в имени нельзя использовать знак подчеркиваниия<br>
+> также добавим метку, чтобы различать сервисы и лейбл comment-db: "true"<br>
+
+- $ `kubectl apply -f comment-mongodb-service.yml`
+
+Обновим файл deployment для mongodb (mongo-deployment.yml), добавив `comment-db: "true"`, чтобы новый Service смог найти нужный POD
+
+- $ `kubectl apply -f mongo-deployment.yml`
+
+По аналогии - для сервиса Post:
+
+- `post-mongodb-service.yml` - создали сервис для ДБ post
+- `post-deployment.yml` - Зададим pod-ам post переменную окружения для обращения к базе
+- `mongo-deployment.yml` - обновили, тобы новый Service post-db смог найти нужный POD
+
+В результате сервис **mongodb** (файл mongodb-service.yml) стал не нужен. Можно его удалить.
+
+- $ `kubectl delete -f mongodb-service.yml`<br>
+
+или<br>
+
+- $ `kubectl delete service mongodb`<br>
+
+> Проверить работу приложения можно, пробросив порты на сервисе UI<br>
+> kubectl port-forward **ui_pod-name** 8080:9292<br>
+
+Организуем доступ к сервису UI снаружи:
+
+- `ui-service.yml` - сервис для доступа к UI
+
+> Теперь до сервиса можно дойти по Node-IP:NodePort<br>
+> Node-IP можно узнать:<br>
+
+> - $ `kubectl describe nodes`<br>
+
+> NodePort - для доступа снаружи кластера<br>
+> port - для доступа к сервису изнутри кластера<br>
+
+#### 1.2 Minikube
+
+- $ `minikube service ui` - выдать web-странцы с сервисами которые были помечены типом NodePort
+- $ `minikube service list` - Посмотреть на список сервисов
+- $ `minikube addons list` - получить список аддонов (расширений) для Kubernetes
+
+##### 1.2.1 Namespace
+
+> При старте Kubernetes кластер уже имеет 3 namespace:<br>
+> • default - для объектов для которых не определен другой Namespace (в нем мы работали все это время)<br>
+> • kube-system - для объектов созданных Kubernetes'ом и для управления им<br>
+> • kube-public - для объектов к которым нужен доступ из любой точки кластера<br>
+
+> Рассмотрим на примере аддон - dashboard:
+
+- $ `minikube addons enable dashboard` - включить dashboard
+- $ `kubectl get all -n kube-system --selector app=kubernetes-dashboard` - Найдем же объекты нашего dashboard
+
+> Мы вывели все объекты из неймспейса kube-system, имеющие label app=kubernetes-dashboard
+
+- $ `minikube service kubernetes-dashboard -n kube-system` - Зайдем в Dashboard
+
+##### 1.2.2 Отделим среду для разработки приложения от всего остального кластера. (Namespace dev)
+
+Создадим Namespace dev:
+
+- `dev-namespace.yml`
+- $ `kubectl apply -f dev-namespace.yml`
+- `ui-deployment.yml` - добавили информацию об окружении DEV
+- $ `kubectl apply -n dev -f .` - запусить приложение в DEV
+- $ `minikube service ui -n dev` - посмотреть результат
+
+### В GKE также можно запустить Dashboard для кластера.
+
+- $ `kubectl create sa kubernetes-dashboard -n kube-system` - Добавим в систему Service Account для дашборда в namespace kube-system (там же запущен dashboard)
+- $ `kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard` - назначим cluster-admin роль service account-у dashboard-а
+- $ `kubectl proxy`
+- `http://localhost:8001/ui`
+
+## 2\. Развернуть Kubernetes в GKE
+
+Пунк выполняется в GKE в вэб-интерфейсе
+
+## 3\. Запустить reddit в Kubernetes в GKE
+
+### Файлы:
+
+YAML-манифсты разнес по соответствующим директориям:
+
+- `microservices/kubernetes/app` - приложение
+- `microservices/kubernetes/namespaces` - создание namespaces (в нашем случае создается namespace `dev`)
+
+### Команды:
+
+После создания кластера:
+
+- $ `gcloud container clusters get-credentials cluster-1 --zone us-central1-a --project infra-179710` - команда примерно такого вида для подключения к нашему кластеру (можно узнать команду в Kubernetes Engine -> Кластеры Kubenetes -> кнопка "Подключиться")
+- $ `kubectl apply -f ./namespaces/` - создадим namespace `dev`
+- $ `kubectl apply -f ./app/ -n dev` - поднимем наше приложение в созданном namespace `dev`
+
+Наше приложение будет доступно по любому из EXTERNAL-IP Node (адрес можно узнать командой `kubectl get nodes -o wide`):
+
+```
+EXTERNAL-IP:32092    # Порт указан в `microservices/kubernetes/app/ui-service.yml` в параметре `nodePort`
+```
+
+## Задание со звездочкой
+
+### 1\. Разверните Kubenetes-кластер в GKE с помощью [Terraform модуля](https://www.terraform.io/docs/providers/google/r/container_cluster.html)
+
+- `microservices/kubernetes/terraform/main.tf`
+- `microservices/kubernetes/terraform/create_cluster.tf`
+- `microservices/kubernetes/terraform/variables.tf`
+- `microservices/kubernetes/terraform/terraform.tfvars.example`
+- `microservices/kubernetes/terraform/outputs.tf`
+- $ `terraform init`
+- $ `terraform plan`
+- $ `terraform apply`
+- $ `terraform destroy`
+
+### 2\. Создайте YAML-манифесты для описания созданных сущностей для включения dashboard.
+
+> Использовался [материал](https://github.com/kubernetes/dashboard/blob/master/src/deploy/alternative/kubernetes-dashboard.yaml)
+
+- `microservices/kubernetes/dashboard/dashboard_service_account.yml`
+- `microservices/kubernetes/dashboard/dashboard_cluster_role_binding(rbac).yml`
+- `microservices/kubernetes/dashboard/dashboard-deployment.yml`
+- `microservices/kubernetes/dashboard/dashboard_service.yml`
+- $ `kubectl apply -f ./dashboard/`
+- $ `kubectl proxy`
+- $ `kubectl delete -f ./dashboard/`

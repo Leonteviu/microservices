@@ -1,0 +1,30 @@
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: ui
+#  namespace: dev
+  labels:
+    app: reddit
+    component: ui
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: reddit
+      component: ui
+  template:
+    metadata:
+      name: ui
+      labels:
+        app: reddit
+        component: ui
+    spec:
+      containers:
+      - image: leonteviu/ui
+        name: ui
+        env:
+        - name: ENV
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace

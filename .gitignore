@@ -13,3 +13,9 @@ docker-compose.yml.my
 # Kubernetes
 .pem
 .retry
+
+# Terraform
+.terraform
+*.tfstate
+*.backup
+*.tfvars

@@ -1,0 +1,7 @@
+project = "<MY-PROJECT-ID>"
+machine_type = "g1-small"
+image_type = "COS"
+zone = "us-central1-a"
+cluster_name = "cluster-1"
+initial_node_count = "2"
+disk_size_gb = "20"
