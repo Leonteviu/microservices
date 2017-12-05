@@ -1118,6 +1118,8 @@ EXTERNAL-IP:32092    # Порт указан в `microservices/kubernetes/app/ui
 - `microservices/kubernetes/terraform/main.tf`
 - `microservices/kubernetes/terraform/create_cluster.tf`
 - `microservices/kubernetes/terraform/variables.tf`
+- `microservices/kubernetes/terraform/terraform.tfvars.example`
+- `microservices/kubernetes/terraform/outputs.tf`
 - $ `terraform init`
 - $ `terraform plan`
 - $ `terraform apply`
