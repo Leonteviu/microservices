@@ -1283,6 +1283,18 @@ Ingress Controller - это скорее плагин (а значит и отд
 - $ `kubectl create secret tls ui-ingress --key tls.key --cert tls.crt -n dev` - загрузим сертификат в кластер kubernetes
 - $ `kubectl describe secret ui-ingress -n dev` - проверим
 
+--------------------------------------------------------------------------------
+
+## Задание со звездочкой
+
+Сертификат можно также загрузить командой:
+
+- $ `kubectl apply -f ./secret/ui-secret.yml -n dev`
+
+В файл `ui-secret.yml` подставлено содержимое созданных нами сертификатов
+
+--------------------------------------------------------------------------------
+
 ### Настроим Ingress на прием только HTTPS трафика
 
 Откорректирум `ui-ingress.yml`:
@@ -1569,3 +1581,5 @@ claimName: mongo-pvc-dynamic       <- Обновим PersistentVolumeClaim
 > `kubectl get persistentvolume -n dev`
 
 > На созданные Kubernetes'ом диски можно посмотреть в [web console](https://console.cloud.google.com/compute/disks)
+
+[В итоге, чтобы поднять наше приложение, доступное по HTTPS, защищенный с помощью TLS, с использованием Ingress правил, с Dynamic PVC,](reddit.md)
