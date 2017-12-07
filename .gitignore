@@ -19,3 +19,7 @@ docker-compose.yml.my
 *.tfstate
 *.backup
 *.tfvars
+
+#TLS Termination
+*.crt
+*.key

@@ -1136,3 +1136,450 @@ EXTERNAL-IP:32092    # Порт указан в `microservices/kubernetes/app/ui
 - $ `kubectl apply -f ./dashboard/`
 - $ `kubectl proxy`
 - $ `kubectl delete -f ./dashboard/`
+
+# Homework 30 (branch kubernetes-3)
+
+## План
+
+- Ingress Controller
+- Ingress
+- Secret
+- TLS
+- LoadBalancer Service
+- StatefulSet
+- Network Policies
+- PersistentVolumes
+- PersistentVolumeClaims
+- StorageLimits
+
+## Необходимо
+
+Поднять наше приложение в среде `DEV`
+
+- $ `terraform apply` - развернем кластер
+- $ `gcloud container clusters get-credentials cluster-1 --zone us-central1-a --project infra-179710` - настроим возможность подключения к нашему кластеру (команда берется из "Подклчиться" в "Кластеры Kubernetes")
+- $ `kubectl apply -f ./namespaces` - создадим окружение `DEV`
+- $ `kubectl apply -f ./app -n dev` - поднимем наше прилоежение в окружении `DEV` (проверить работоспособность можно, перейдя по адресу <http://IP_одной_из_VM_кластера:32092/>. В данном случае используется **nodePort** (см. ниже))
+
+--------------------------------------------------------------------------------
+
+Немного теории:
+
+```
+Типы Service (обеспечивают сетевое взаимодействие с приложением в Kubernetes):
+
+- ClusterIP - дойти до сервиса можно только изнутри кластера (kubectl get services -n dev)
+- nodePort - клиент снаружи кластера приходит на опубликованный порт
+- LoadBalancer - клиент приходит на облачный (aws elb, Google gclb) ресурс балансировки
+- ExternalName - внешний ресурс по отношению к кластеру
+```
+
+### LoadBalancer
+
+```
+Тип LoadBalancer позволяет нам использовать внешний облачный балансировщик нагрузки, как единую
+точку входа в наши сервисы, а не полагаться на IPTables и не открывать наружу весь кластер.
+
+Балансировка с помощью Service типа LoadBalancing имеет ряд недостатков:
+- нельзя управлять с помощью http URI (L7-балансировка)
+- используются только облачные балансировщики (AWS, GCP)
+- нет гибких правил работы с трафиком
+```
+
+#### Файлы:
+
+`ui-service.yml`
+
+```
+type: LoadBalancer
+port: 80 - Порт, который будет открыт на балансировщике
+nodePort: 32092 - Также на ноде будет открыт порт, но нам он не нужен (его мы убрали)
+targetPort: 9292 - Порт POD-а
+```
+
+#### Команды:
+
+- $ `kubectl apply -f ui-service.yml -n dev`
+- $ `kubectl get service -n dev --selector component=ui` - посмотрим на наш сервис UI (нас интересует EXTERNAL-IP и PORT)
+
+  ```
+  Провери работу приложения можно перейдя по адресу http://<EXTERNAL-IP>:PORT, в нашем случае, так как порт 80, то http://<EXTERNAL-IP>
+  ```
+
+> Будет создано правило для балансировки (GCP - Сетевые сервисы - Балансировка нагрузки)
+
+--------------------------------------------------------------------------------
+
+## Ingress and Ingress Conroller
+
+```
+Для более удобного управления входящим снаружи трафиком и решения недостатков LoadBalancer можно
+использовать другой объект Kubernetes - Ingress.
+
+Ingress – это набор правил внутри кластера Kubernetes, предназначенных для того, чтобы входящие
+подключения могли достичь сервисов (Services)
+
+Сами по себе Ingress’ы это просто правила. Для их применения нужен Ingress Controller.
+
+Ingress Controller - это скорее плагин (а значит и отдельный POD), который состоит из 2-х функциональных частей:
+- Приложение, которое отслеживает через k8s API новые объекты Ingress и обновляет конфигурацию балансировщика
+- Балансировщик (Nginx, haproxy, traefik,...), который и занимается управлением сетевым трафиком
+```
+
+```
+Основные задачи, решаемые с помощью Ingress’ов:
+- Организация единой точки входа в приложения снаружи
+- Обеспечение балансировки трафика
+- Терминация SSL
+- Виртуальный хостинг на основе имен и т.д
+```
+
+> Убедимся, что встроенный Ingress включен. ("Балансировка нагрузки HTTP" - нашего кластера должен быть включен)
+
+### Файлы:
+
+`ui-ingress.yml`
+
+**! Обратим внимание, что servicePort в ui-ingress.yml должен совпадать с port, указанным в ui-service.yml**
+
+### Команды:
+
+- $ `kubectl apply -f ui-ingress.yml -n dev`
+
+> Будет создано правило для балансировки (GCP - Сетевые сервисы - Балансировка нагрузки)
+
+- $ `kubectl get ingress -n dev` - узнаем адрес сервиса ingress (возможно, придется подождать, пока он появится)
+
+> Проверить работоспособность сервиса можно <http://ip_address_ingress:80> (порт 80 указан нами в настройкахыы)
+
+- $ `kubectl describe ingress -n dev`
+- $ `kubectl get services -n dev`
+
+```
+На данный момент у нас работае два балансировщика (LoadBalancer и Ingress). То есть к нашему приложению можно обратиться по двум адресам:
+
+1-й http://EXTERNAL-IP:80 (EXTERNAL-IP узнаем из вывода команды   kubectl get service -n dev --selector component=ui) - LoadBalancer
+2-й http://ip_address_ingress:80 (ip_address_ingress узнаем из вывода команды   kubectl get ingress -n dev) - Ingress
+
+Вместе с этим мы не умеем управлять трафиком на уровне HTTP
+```
+
+Оставим один балансировщик, для этого:
+
+1.\ внесем изменения в `ui-service.yml` и переконфигурируем сервис для UI
+
+- $ `kubectl apply -f ui-service.yml -n dev`
+
+2.\ Заставим работать Ingress Controller как классический веб, внеся изменения в `ui-ingress.yml`
+
+- $ `kubectl apply -f ui-ingress.yml -n dev`
+
+## Secret. Защитим наш сервис с помощью TLS (TLS Termination).
+
+### Необходимо
+
+- $ `kubectl get ingress -n dev` - узнаем Ingress IP
+- $ `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout tls.key -out tls.crt -subj "/CN=<Ingress_IP>"` - подготовим сертификат используя IP как CN
+- $ `kubectl create secret tls ui-ingress --key tls.key --cert tls.crt -n dev` - загрузим сертификат в кластер kubernetes
+- $ `kubectl describe secret ui-ingress -n dev` - проверим
+
+--------------------------------------------------------------------------------
+
+## Задание со звездочкой
+
+Сертификат можно также загрузить командой:
+
+- $ `kubectl apply -f ./secret/ui-secret.yml -n dev`
+
+В файл `ui-secret.yml` подставлено содержимое созданных нами сертификатов
+
+--------------------------------------------------------------------------------
+
+### Настроим Ingress на прием только HTTPS трафика
+
+Откорректирум `ui-ingress.yml`:
+
+```
+annotations:
+  kubernetes.io/ingress.allow-http: "false"    <- Отключаем проброс HTTP
+
+tls:
+- secretName: ui-ingress    <- Подключаем наш сертификат
+```
+
+- $ `kubectl delete -f ui-ingress.yml -n dev` - применим изменения в `ui-ingress.yml`
+- $ `kubectl apply -f ui-ingress.yml -n dev` - применим изменения в `ui-ingress.yml`
+
+> Зайдем на страницу [web console](https://console.cloud.google.com/net-services/loadbalancing/loadBalancers/list) и увидим в описании нашего балансировщика только один протокол HTTPS<br>
+> Иногда протокол HTTP может не удалиться у существующего Ingress правила, тогда нужно его<br>
+> вручную удалить и пересоздать
+
+```
+Заходим на страницу нашего приложения по https
+(https://Ingress_IP, узнать Ingress_IP - kubectl get ingress -n dev),
+подтверждаем исключение безопасности (у нас сертификат самоподписанный)
+и видим что все работает
+(возможно, придется некоторое время подождать)
+```
+
+## Network Policy
+
+```
+Хотелось бы разнести сервисы базы данных и сервис фронтенда по разным сетям,
+сделав их недоступными друг для друга.
+В Kubernetes у нас так сделать не получится с помощью отдельных сетей,
+так как все POD-ы могут достучаться друг до друга по-умолчанию.
+
+Мы будем использовать NetworkPolicy - инструмент для декларативного описания потоков трафика.
+Отметим, что не все сетевые плагины поддерживают политики сети.
+В частности, у GKE эта функция пока в Beta-тесте и для её работы отдельно будет включен
+сетевой плагин Calico (вместо Kubenet).
+```
+
+Наша задача - ограничить трафик, поступающий на mongodb отовсюду, кроме сервисов post и comment.
+
+### Файлы:
+
+- `mongo-network-policy.yml`
+
+```
+podSelector:
+  matchLabels:
+    app: reddit
+    component: mongo             Выбираем объекты политики (pod’ы с mongodb)
+
+policyTypes:                     Запрещаем все входящие подключения
+- Ingress                        Исходящие разрешены
+
+ingress:
+- from:
+  - podSelector:
+      matchLabels:
+        app: reddit              Разрешаем все входящие подключения от
+        component: comment       POD-ов с label-ами comment.
+```
+
+```
+Правила ингресса:
+ правило 1\. фильтры по адресанту (от кого идет трафик):
+   фильтр 1\. Все поды подходящие под условия:
+     условие 1\. Под обладает следующими лейблами:
+      лейбл 1\. app: reddit
+      лейбл 2\. component: comment
+
+и в данном случае между лейблом 1 и лейблом 2 стоит логическая операция И
+
+То есть для сервиса Post будет необходим еще один podSelector для него:
+
+ingress:
+- from:
+  - podSelector:
+      matchLabels:
+        app: reddit
+        component: comment
+  - podSelector:
+      matchLabels:
+        app: reddit
+        component: post
+```
+
+### Команды:
+
+- $ `gcloud beta container clusters list` - найдем имя нашего кластера
+
+Включим network-policy для GKE:
+
+- $ `gcloud beta container clusters update <cluster-name> --zone=us-central1-a --update-addons=NetworkPolicy=ENABLED`
+
+- $ `gcloud beta container clusters update <cluster-name> --zone=us-central1-a --enable-network-policy`
+
+> Вам может быть предложено добавить beta-функционал в gcloud - нажмите yes.
+
+- $ `kubectl apply -f mongo-network-policy.yml -n dev` - Применяем политику
+
+--------------------------------------------------------------------------------
+
+## Хранилище для БД
+
+```
+Основной Stateful сервис в нашем приложении - это база данных MongoDB.
+В текущий момент она запускается в виде Deployment и хранит данные в
+стаднартный Docker Volume-ах. Это имеет несколько проблем:
+- при удалении POD-а удаляется и Volume
+- потеря Nod’ы с mongo грозит потерей данных
+- запуск базы на другой ноде запускает новый экземпляр данных
+```
+
+> Сейчас используется тип Volume emptyDir. При создании пода с<br>
+> таким типом просто создается пустой docker volume.<br>
+> При остановке POD'a содержимое emtpyDir удалится навсегда.<br>
+> Хотя в общем случае падение POD'a не вызывает удаления<br>
+> Volume'a.<br>
+
+## Volume
+
+### Файлы:
+
+- `mongo-deployment.yml` - Добавим новый Volume POD-у базы
+
+Вместо того, чтобы хранить данные локально на ноде, имеет смысл подключить удаленное хранилище.<br>
+В нашем случае можем использовать Volume gcePersistentDisk,<br>
+который будет складывать данные в хранилище GCE.<br>
+
+### Команды:
+
+- $ `gcloud compute disks create --size=25GB --zone=us-central1-a reddit-mongo-disk` - Создадим диск в Google Cloud
+- $ `kubectl apply -f mongo-deployment.yml -n dev` - Монтируем выделенный диск к POD'у
+
+```
+Проверить, что после удаления deployment mongo информация доступна на созданном диске:
+$ kubectl delete deploy mongo -n dev
+$ kubectl apply -f mongo-deployment.yml -n dev
+```
+
+> [Здесь](https://console.cloud.google.com/compute/disks) можно посмотреть на созданный диск и увидеть какой машиной он используется
+
+## PersistentVolume
+
+```
+Используемый механизм Volume-ов можно сделать удобнее.
+Мы можем использовать не целый выделенный диск для
+каждого пода, а целый ресурс хранилища, общий для всего
+кластера.
+Тогда при запуске Stateful-задач в кластере, мы сможем
+запросить хранилище в виде такого же ресурса, как CPU или
+оперативная память.
+Для этого будем использовать механизм PersistentVolume.
+```
+
+### Файлы:
+
+- `mongo-volume.yml` - описание PersistentVolume
+
+```
+...
+name: reddit-mongo-disk        <- Имя PersistentVolume'а
+...
+pdName: "reddit-mongo-disk"    <- Имя диска в GCE
+```
+
+### Команды:
+
+- $ `kubectl apply -f mongo-volume.yml -n dev` - Добавим ресурс дискового хранилища, распространенный на весь кластер, в виде PersistentVolume
+
+> Создали PersistentVolume в виде диска в GCP.
+
+## PersistentVolumeClaim
+
+```
+Мы создали ресурс дискового хранилища,
+распространенный на весь кластер, в виде PersistentVolume.
+
+Чтобы выделить приложению часть ресурса PersistentVolume,
+нужно создать запрос на выдачу - PersistentVolumeClaim.
+
+Claim - это именно запрос, а не само хранилище.
+
+С помощью запроса можно выделить место как из
+конкретного PersistentVolume (тогда параметры
+accessModes и StorageClass должны соответствовать, а
+места должно хватать), так и просто создать отдельный
+PersistentVolume под конкретный запрос.
+```
+
+### Файлы:
+
+- `mongo-claim.yml` - описание PersistentVolumeClaim (PVC)
+
+```
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongo-pvc        <- Имя PersistentVolumeClame'а
+spec:
+  accessModes:
+    - ReadWriteOnce      <- accessMode у PVC и у PV должен совпадать
+  resources:
+    requests:
+      storage: 25Gi
+```
+
+### Команды:
+
+- $ `kubectl apply -f mongo-claim.yml -n dev` - Добавим PersistentVolumeClaim в кластер
+
+> Мы выделили место в PV по запросу для нашей базы.<br>
+> Одновременно использовать один PV можно только по<br>
+> одному Claim'у<br>
+
+> Если Claim не найдет по заданным параметрам PV внутри<br>
+> кластера, либо тот будет занят другим Claim'ом<br>
+> то он сам создаст нужный ему PV воспользовавшись<br>
+> стандартным StorageClass.<br>
+> `kubectl describe storageclass standard -n dev`<br>
+
+## Подключим PVC к нашим Pod'ам
+
+### Файлы:
+
+- `mongo-deployment.yml`
+
+```
+.........
+volumes:
+- name: mongo-gce-pd-storage
+  persistentVolumeClaim:
+    claimName: mongo-pvc    <- Имя PersistentVolumeClame'а
+```
+
+### Команды:
+
+- $ `kubectl apply -f mongo-deployment.yml -n dev`
+
+## StorageClass
+
+```
+Создав PersistentVolume мы отделили объект "хранилища" от
+наших Service'ов и Pod'ов. Теперь мы можем его при
+необходимости переиспользовать.
+Но нам гораздо интереснее создавать хранилища при
+необходимости и в автоматическом режиме. В этом нам помогут
+StorageClass’ы. Они описывают где (какой провайдер) и какие
+хранилища создаются.
+В нашем случае создадим StorageClass Fast так, чтобы
+монтировались SSD-диски для работы нашего хранилища.
+```
+
+### Файлы:
+
+- `storage-fast.yml` - описание StorageClass'а
+- `storage-slow.yml` - описание StorageClass'а
+- `mongo-claim-dynamic.yml` - описание PersistentVolumeClaim
+
+```
+...
+storageClassName: slow  <- Вместо ссылки на созданный диск, теперь мы ссылаемся на StorageClass
+...
+```
+
+- `mongo-deployment.yml` - Подключим PVC к нашим Pod'ам
+
+```
+...
+claimName: mongo-pvc-dynamic       <- Обновим PersistentVolumeClaim
+```
+
+### Команды:
+
+- $ `kubectl apply -f storage-fast.yml -n dev` - Добавим StorageClass в кластер
+- $ `kubectl apply -f storage-slow.yml -n dev` - Добавим StorageClass в кластер
+- $ `kubectl apply -f mongo-claim-dynamic.yml -n dev` - Добавим StorageClass в кластер
+- $ `kubectl apply -f mongo-deployment.yml -n dev` - Обновим описание нашего Deployment'а
+
+> Чтобы посмотреть, какие в итоге у нас получились PersistentVolume'ы<br>
+> `kubectl get persistentvolume -n dev`
+
+> На созданные Kubernetes'ом диски можно посмотреть в [web console](https://console.cloud.google.com/compute/disks)
+
+[В итоге, чтобы поднять наше приложение, доступное по HTTPS, защищенный с помощью TLS, с использованием Ingress правил, с Dynamic PVC,](reddit.md)
