@@ -1631,3 +1631,29 @@ $ kubectl config set-context
 - $ `kubectl apply -f tiller.yml`
 - $ `helm init --service-account tiller` - запустим tiller-сервер
 - $ `kubectl get pods -n kube-system --selector app=helm` - проверим
+
+### Charts
+
+> Chart - это пакет в Helm.<br>
+
+```
+Создадим директорию Charts в папке kubernetes со следующей структурой директорий:
+|--Charts
+   |-- comment
+   |-- post
+   |-- reddit
+   |-- ui
+```
+
+### Файлы:
+
+**! helm предпочитает .yaml**
+
+Разработка Chart'а для компоненты ui приложения
+
+- `~/microservices/kubernetes/Charts/ui/Chart.yaml`
+
+> Реально значимыми являются поля name и version. От них зависит<br>
+> работа Helm'а с Chart'ом. Остальное - описания.
+
+### Команды:
