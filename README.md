@@ -1625,3 +1625,6 @@ $ kubectl config set-context
 - `~/microservices/kubernetes/tiller.yml`
 
 ### Команды:
+
+- $ `kubectl apply -f tiller.yml`
+- $ `helm init --service-account tiller` - запустим tiller-сервер
