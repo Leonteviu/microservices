@@ -1695,9 +1695,9 @@ metadata:
 spec:                              # конкретного релиза
   type: NodePort
   ports:
-  - port: 9292
+  - port: {{ .Values.service.externalPort }}
     protocol: TCP
-    targetPort: 9292
+    targetPort: {{ .Values.service.internalPort }}
   selector:
     app: reddit
     component: ui
@@ -1723,6 +1723,7 @@ Chart.yaml)
 
 - `~/microservices/kubernetes/Charts/ui/templates/deployment.yaml`
 - `~/microservices/kubernetes/Charts/ui/templates/ingress.yaml`
+- `~/microservices/kubernetes/Charts/ui/values.yaml` - значения собственных переменных
 
 #### Команды:
 
@@ -1739,3 +1740,11 @@ Chart.yaml)
 - $ `helm install ui --name ui-2`
 - $ `helm install ui --name ui-3`
 - $ `kubectl get ingress` - проверим наличие трех Ingress
+
+Можно обновить после внесения изменений:
+
+- $ `helm upgrade ui-1 ui/`
+- $ `helm upgrade ui-2 ui/`
+- $ `helm upgrade ui-3 ui/`
+
+- $ `helm del --purge ui-1` - удалить
