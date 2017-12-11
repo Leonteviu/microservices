@@ -1836,3 +1836,39 @@ Post:
 - $ `helm upgrade ui-3 ui/`
 
 - $ `helm del --purge ui-1` - удалить
+
+### Управление зависимостями
+
+```
+Мы создали Chart’ы для каждой компоненты нашего приложения.
+Каждый из них можно запустить по-отдельности командой
+
+$ helm install <chart-path> <release-name>
+
+Но они будут запускаться в разных релизах, и не будут видеть
+друг друга.
+
+С помощью механизма управления зависимостями создадим
+единый Chart reddit, который объединит наши компоненты
+```
+
+#### Файлы:
+
+- `~/microservices/kubernetes/Charts/reddit/Chart.yaml` - Chart, объединяющий компоненты нашего приложения Reddit
+- `~/microservices/kubernetes/Charts/reddit/values.yaml`
+- `~/microservices/kubernetes/Charts/reddit/requirements.yaml`
+
+```
+dependencies:
+  - name: ui                     <- Имя и версия должны совпадать
+    version: "1.0.0"                с содеражанием ui/Chart.yml
+    repository: file://../ui     <- Путь относительно расположения
+  - name: post                      самого requiremetns.yml
+    version: 1.0.0
+    repository: file://../post
+  - name: comment
+    version: 1.0.0
+    repository: file://../comment
+```
+
+#### Команды:
