@@ -1583,3 +1583,45 @@ claimName: mongo-pvc-dynamic       <- Обновим PersistentVolumeClaim
 > На созданные Kubernetes'ом диски можно посмотреть в [web console](https://console.cloud.google.com/compute/disks)
 
 [В итоге, чтобы поднять наше приложение, доступное по HTTPS, защищенный с помощью TLS, с использованием Ingress правил, с Dynamic PVC,](reddit.md)
+
+# Homework 31 (branch kubernetes-4)
+
+## План
+
+- Работа с Helm
+- Развертывание Gitlab в Kubernetes
+- Запуск CI/CD конвейера в Kubernetes
+
+## Helm
+
+> Helm - пакетный менеджер для Kubernetes.<br>
+> С его помощью мы будем:<br>
+> 1) Стандартизировать поставку приложения в Kubernetes<br>
+> 2) Декларировать инфраструктуру<br>
+> 3) Деплоить новые версии приложения<br>
+
+> Helm - клиент-серверное приложение.<br>
+
+### Установим [Helm](https://github.com/kubernetes/helm/releases) (распакуйте и разместите исполняемый файл helm в директории исполнения (/usr/local/bin/ , /usr/bin, ...))
+
+> Helm читает конфигурацию kubectl ( ~/.kube/config ) и сам<br>
+> определяет текущий контекст (кластер, пользователь, неймспейс)<br>
+
+```
+Если хотите сменить кластер, то либо меняйте контекст с помощью
+$ kubectl config set-context
+
+либо подгружайте helm’у собственный config-файл флагом --kube-context .
+```
+
+### Установим серверную часть Helm'а - Tiller.
+
+> Tiller - это аддон Kubernetes, т.е. Pod, который общается с API Kubernetes.<br>
+> Для этого понадобится ему выдать **ServiceAccount**<br>
+> и назначить роли **RBAC**, необходимые для работы.<br>
+
+### Файлы:
+
+- `~/microservices/kubernetes/tiller.yml`
+
+### Команды:
