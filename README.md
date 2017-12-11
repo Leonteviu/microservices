@@ -1884,6 +1884,46 @@ dependencies:
       repository: https://kubernetes-charts.storage.googleapis.com
 ```
 
+```
+Есть проблема с тем, что UI-сервис не знает как правильно
+ходить в post и comment сервисы.
+Ведь их имена теперь динамические и зависят от имен чартов
+В Dockerfile UI-сервиса уже заданы переменные окружения.
+Надо, чтобы они указывали на нужные бекенды
+ENV POST_SERVICE_HOST post
+ENV POST_SERVICE_PORT 5000
+ENV COMMENT_SERVICE_HOST comment
+ENV COMMENT_SERVICE_PORT 9292
+```
+
+- `~/microservices/kubernetes/Charts/ui/templates/deployment.yaml`
+
+```
+Добавим в ui/templates/deployment.yaml:
+
+- name: POST_SERVICE_HOST
+  value: {{  .Values.postHost | default (printf "%s-post" .Release.Name) }}
+- name: POST_SERVICE_PORT
+  value: {{  .Values.postPort | default "5000" | quote }}
+- name: COMMENT_SERVICE_HOST
+  value: {{  .Values.commentHost | default (printf "%s-comment" .Release.Name) }}
+- name: COMMENT_SERVICE_PORT
+value: {{ .Values.commentPort | default "9292" | quote }}
+
+Здесь quote - функция для добавления кавычек Для чисел и булевых значений это важно
+```
+
+- `~/microservices/kubernetes/Charts/ui/values.yaml`
+
+```
+Добавим в ui/values.yaml:
+
+postHost:      # Можете даже закомментировать эти параметры или
+postPort:      # оставить пустыми. Главное, чтобы они были в
+commentHost:   # конфигурации Chart’а в качестве документации
+commentPort:
+```
+
 #### Команды:
 
 - $ `helm dep update` - загрузить зависимости (когда Chart' не упакован в tgz архив)
