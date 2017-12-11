@@ -1725,6 +1725,40 @@ Chart.yaml)
 - `~/microservices/kubernetes/Charts/ui/templates/ingress.yaml`
 - `~/microservices/kubernetes/Charts/ui/values.yaml` - значения собственных переменных
 
+Внесем изменения в файлы для Post:
+
+- `~/microservices/kubernetes/Charts/post/templates/deployment.yaml`
+
+```
+Обратим внимание на адрес БД
+Поскольку адрес БД может меняться в зависимости от условий запуска:
+- БД отдельно от кластера
+- БД запущено в отдельном релизе
+- ...
+, то создадим удобный шаблон для задания адреса БД:
+
+env:
+- name: POST_DATABASE_HOST
+value: {{ .Values.databaseHost }}
+
+Будем задавать БД через переменную databaseHost.
+Иногда лучше использовать подобный формат переменных вместо
+структур database.host, так как тогда прийдется определять
+структуру database, иначе helm выдаст ошибку.
+Используем функцию default. Если databaseHost не будет определена
+или ее значение будет пустым, то используется вывод функции printf
+(которая просто формирует строку <имя-релиза>-mongodb)
+value: {{ .Values.databaseHost | default (printf "%s-mongodb" .Release.Name) }}
+
+Теперь, если databaseHost не задано, то будет использовано
+адрес базы, поднятой внутри релиза.
+```
+
+Более подробная [документация](https://docs.helm.sh/chart_template_guide/#the-chart-template-developer-s-guide) по шаблонизации и функциям
+
+- `~/microservices/kubernetes/Charts/post/templates/ingress.yaml`
+- `~/microservices/kubernetes/Charts/post/values.yaml` - значения собственных переменных
+
 #### Команды:
 
 ##### Важно! Убедитесь, что встроенный Ingress включен ([веб-консоль gcloud](https://console.cloud.google.com/kubernetes) должен быть включен "Балансировщик нагрузки HTTP").

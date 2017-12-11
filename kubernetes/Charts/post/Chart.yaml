@@ -1,0 +1,7 @@
+name: post
+version: 1.0.0
+description: OTUS reddit application UI
+maintainers:
+  - name: Igor Leontev
+    email: leonteviu.devops@gmail.com
+appVersion: 1.0
