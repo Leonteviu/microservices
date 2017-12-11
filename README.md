@@ -1806,12 +1806,28 @@ template             <- Функция template.
 - $ `helm install --name test-ui-1 ui/` - установим Chart (здесь `test-ui-1` - имя релиза `ui/` - путь до Chart'a)
 - $ `helm ls` - проверить
 
-Установим несколько релизов UI:
+Установим несколько релизов
+
+UI:
 
 - $ `helm install ui --name ui-1`
 - $ `helm install ui --name ui-2`
 - $ `helm install ui --name ui-3`
 - $ `kubectl get ingress` - проверим наличие трех Ingress
+
+Comment:
+
+- $ `helm install comment --name comment-1`
+- $ `helm install comment --name comment-2`
+- $ `helm install comment --name comment-3`
+
+Post:
+
+- $ `helm install comment --name post-1`
+- $ `helm install comment --name post-2`
+- $ `helm install comment --name post-3`
+
+- $ `helm ls`
 
 Можно обновить после внесения изменений:
 
