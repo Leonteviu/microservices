@@ -1759,6 +1759,12 @@ value: {{ .Values.databaseHost | default (printf "%s-mongodb" .Release.Name) }}
 - `~/microservices/kubernetes/Charts/post/templates/ingress.yaml`
 - `~/microservices/kubernetes/Charts/post/values.yaml` - значения собственных переменных
 
+Внесем изменения в файлы для Coment:
+
+- `~/microservices/kubernetes/Charts/comment/templates/deployment.yaml`
+- `~/microservices/kubernetes/Charts/comment/templates/ingress.yaml`
+- `~/microservices/kubernetes/Charts/comment/values.yaml` - значения собственных переменных
+
 #### Команды:
 
 ##### Важно! Убедитесь, что встроенный Ingress включен ([веб-консоль gcloud](https://console.cloud.google.com/kubernetes) должен быть включен "Балансировщик нагрузки HTTP").
