@@ -1872,3 +1872,9 @@ dependencies:
 ```
 
 #### Команды:
+
+- $ `helm dep update` - загрузить зависимости (когда Chart' не упакован в tgz архив)
+
+> В ~/microservices/kubernetes/Charts/reddit/<br>
+> 1) Появится файл requirements.lock с фиксацией зависимостей<br>
+> 2) Будет создана директория charts с зависимостями в виде архивов<br>
