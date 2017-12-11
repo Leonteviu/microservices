@@ -1632,6 +1632,8 @@ $ kubectl config set-context
 - $ `helm init --service-account tiller` - запустим tiller-сервер
 - $ `kubectl get pods -n kube-system --selector app=helm` - проверим
 
+**Важно! Убедитесь, что встроенный Ingress включен. (В [веб-консоли gcloud](https://console.cloud.google.com/kubernetes) должен быть включен "Балансировщик нагрузки HTTP").**
+
 ### Charts
 
 > Chart - это пакет в Helm.<br>
@@ -1765,9 +1767,39 @@ value: {{ .Values.databaseHost | default (printf "%s-mongodb" .Release.Name) }}
 - `~/microservices/kubernetes/Charts/comment/templates/ingress.yaml`
 - `~/microservices/kubernetes/Charts/comment/values.yaml` - значения собственных переменных
 
+```
+Также стоит отметить функционал Helm по использованию helper’ов и функции templates.
+Helper - это написанная нами функция.
+В функции описывается, как правило, сложная логика.
+Шаблоны этих функций распологаются в файле _helpers.tpl
+
+Пример функции comment.fullname :
+
+charts/comment/templates/_helpers.tpl
+
+{{- define "comment.fullname" -}}
+{{- printf "%s-%s" .Release.Name .Chart.Name }}
+{{- end -}}
+которая в результате выдаст то же, что и:
+{{ .Release.Name }}-{{ .Chart.Name }}
+```
+
+```
+Структура ипортирующей функции template {{ template "comment.fullname" . }}:
+
+template             <- Функция template.
+
+"comment.fullname"   <- Название функции для импорта.
+
+.                    <- Область видимости для импорта.
+                        “.”- вся область видимости всех переменных
+                        (можно передать .Chart , тогда .Values
+                        не будут доступны внутри функции)
+```
+
 #### Команды:
 
-##### Важно! Убедитесь, что встроенный Ingress включен ([веб-консоль gcloud](https://console.cloud.google.com/kubernetes) должен быть включен "Балансировщик нагрузки HTTP").
+**Важно! Убедитесь, что встроенный Ingress включен. (В [веб-консоли gcloud](https://console.cloud.google.com/kubernetes) должен быть включен "Балансировщик нагрузки HTTP").**
 
 > Убедитесь, что у вас не развернуты компоненты приложения в kubernetes. Если развернуты - удалите их
 
