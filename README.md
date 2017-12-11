@@ -1678,13 +1678,64 @@ $ kubectl config set-context
 
 #### Файлы:
 
-- `~/microservices/kubernetes/Charts/ui/templates/deployment.yaml`
+Шаблонизируем Chart, чтобы можно было использовать его для запуска нескольких экземпляров (релизов).
+
 - `~/microservices/kubernetes/Charts/ui/templates/service.yaml`
+
+```
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-{{ .Chart.Name }}  # Нам нужно уникальное
+  labels:                                      # имя запущенного ресурса
+    app: reddit
+    component: ui
+    release: {{ .Release.Name }}   # Помечаем, что сервис из
+spec:                              # конкретного релиза
+  type: NodePort
+  ports:
+  - port: 9292
+    protocol: TCP
+    targetPort: 9292
+  selector:
+    app: reddit
+    component: ui
+    release: {{ .Release.Name }}  # Выбираем POD-ы только из этого релиза
+```
+
+```
+name: {{ .Release.Name }}-{{ .Chart.Name }}
+
+Здесь мы используем встроенные переменные
+.Release - группа переменных с информацией о релизе
+(конкретном запуске Chart’а в k8s)
+.Chart - группа переменных с информацией о Chart’е (содержимое файла
+Chart.yaml)
+
+Также еще есть группы переменных:
+.Template - информация о текущем шаблоне ( .Name и .BasePath)
+.Capabilities - информация о Kubernetes (версия, версии API)
+.Files.Get - получить содержимое файла
+```
+
+По аналогии шаблонизируем и остальные файлы сервиса UI
+
+- `~/microservices/kubernetes/Charts/ui/templates/deployment.yaml`
 - `~/microservices/kubernetes/Charts/ui/templates/ingress.yaml`
 
 #### Команды:
+
+##### Важно! Убедитесь, что встроенный Ingress включен ([веб-консоль gcloud](https://console.cloud.google.com/kubernetes) должен быть включен "Балансировщик нагрузки HTTP").
 
 > Убедитесь, что у вас не развернуты компоненты приложения в kubernetes. Если развернуты - удалите их
 
 - $ `helm install --name test-ui-1 ui/` - установим Chart (здесь `test-ui-1` - имя релиза `ui/` - путь до Chart'a)
 - $ `helm ls` - проверить
+
+Установим несколько релизов UI:
+
+- $ `helm install ui --name ui-1`
+- $ `helm install ui --name ui-2`
+- $ `helm install ui --name ui-3`
+- $ `kubectl get ingress` - проверим наличие трех Ingress

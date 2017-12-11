@@ -2,27 +2,35 @@
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
-  name: ui
-#  namespace: dev
+  name: {{ .Release.Name }}-{{ .Chart.Name }}
   labels:
     app: reddit
     component: ui
+    release: {{ .Release.Name }}
 spec:
   replicas: 3
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: reddit
       component: ui
+      release: {{ .Release.Name }}
   template:
     metadata:
       name: ui
       labels:
         app: reddit
         component: ui
+        release: {{ .Release.Name }}
     spec:
       containers:
       - image: leonteviu/ui
         name: ui
+        ports:
+        - containerPort: 9292
+          name: ui
+          protocol: TCP
         env:
         - name: ENV
           valueFrom:
