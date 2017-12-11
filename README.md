@@ -1835,7 +1835,17 @@ Post:
 - $ `helm upgrade ui-2 ui/`
 - $ `helm upgrade ui-3 ui/`
 
-- $ `helm del --purge ui-1` - удалить
+Удалим все созданное:
+
+- $ `helm del --purge ui-1`
+- $ `helm del --purge ui-2`
+- $ `helm del --purge ui-3`
+- $ `helm del --purge post-1`
+- $ `helm del --purge post-2`
+- $ `helm del --purge post-3`
+- $ `helm del --purge comment-1`
+- $ `helm del --purge comment-2`
+- $ `helm del --purge comment-3`
 
 ### Управление зависимостями
 
@@ -1869,6 +1879,9 @@ dependencies:
   - name: comment
     version: 1.0.0
     repository: file://../comment
+    - name: mongodb                  Версия Chart для mongo из
+      version: 0.4.20             <- общедоступного репозитория
+      repository: https://kubernetes-charts.storage.googleapis.com
 ```
 
 #### Команды:
@@ -1878,3 +1891,11 @@ dependencies:
 > В ~/microservices/kubernetes/Charts/reddit/<br>
 > 1) Появится файл requirements.lock с фиксацией зависимостей<br>
 > 2) Будет создана директория charts с зависимостями в виде архивов<br>
+
+- $ `helm search mongo` - найдем Chart для **mongo** в общедоступном окружении (Chart для базы данных не будем создавать вручную. Возьмем готовый)
+
+- $ `helm dep update reddit` - загрузим зависимости для Reddit (загрузится необходимый Chart для mongodb)
+
+- $ `helm install reddit --name reddit-test` - **запустим наше приложение релиз `reddit-test`**
+
+- $ `kubectl get ingress` - узнаем IP для подключения к нашему приложению

@@ -8,5 +8,8 @@ dependencies:
 - name: comment
   repository: file://../comment
   version: 1.0.0
-digest: sha256:5ec53132b5c5cb0272d2d60caeb38d1595d21496f48b894b0a69b119cbd0f099
-generated: 2017-12-11T16:46:07.223258132+03:00
+- name: mongodb
+  repository: https://kubernetes-charts.storage.googleapis.com
+  version: 0.4.20
+digest: sha256:6e63cd1428ef821e5841b7cb8e72d0116957f733ea6561fceeddfe6dc97f6988
+generated: 2017-12-11T17:35:43.436414049+03:00
