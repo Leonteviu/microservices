@@ -1645,7 +1645,7 @@ $ kubectl config set-context
    |-- ui
 ```
 
-### Файлы:
+#### Файлы:
 
 **! helm предпочитает .yaml**
 
@@ -1656,4 +1656,35 @@ $ kubectl config set-context
 > Реально значимыми являются поля name и version. От них зависит<br>
 > работа Helm'а с Chart'ом. Остальное - описания.
 
-### Команды:
+### Templates
+
+> Основным содержимым Chart'ов являются шаблоны манифестов Kubernetes.
+
+```
+1) Создайте директорию ui/templates
+2) Перенесите в неё все манифесты, разработанные ранее для
+сервиса ui (ui-service, ui-deployment, ui-ingress)
+3) Переименуйте их (уберите префикс “ui-“) и поменяйте
+расширение на .yaml) - стилистические правки
+|-- ui
+    |-- Chart.yaml
+    |-- templates
+        |-- deployment.yaml
+        |-- ingress.yaml
+        |-- service.yaml
+
+Получаем уже готовый пакет для установки в Kubernetes
+```
+
+#### Файлы:
+
+- `~/microservices/kubernetes/Charts/ui/templates/deployment.yaml`
+- `~/microservices/kubernetes/Charts/ui/templates/service.yaml`
+- `~/microservices/kubernetes/Charts/ui/templates/ingress.yaml`
+
+#### Команды:
+
+> Убедитесь, что у вас не развернуты компоненты приложения в kubernetes. Если развернуты - удалите их
+
+- $ `helm install --name test-ui-1 ui/` - установим Chart (здесь `test-ui-1` - имя релиза `ui/` - путь до Chart'a)
+- $ `helm ls` - проверить
