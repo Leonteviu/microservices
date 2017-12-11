@@ -23,3 +23,7 @@ docker-compose.yml.my
 #TLS Termination
 *.crt
 *.key
+
+# Charts
+*.lock
+*.tgz

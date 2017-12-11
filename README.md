@@ -1727,6 +1727,11 @@ Chart.yaml)
 - `~/microservices/kubernetes/Charts/ui/templates/ingress.yaml`
 - `~/microservices/kubernetes/Charts/ui/values.yaml` - значения собственных переменных
 
+> Обратить внимание, что в файле `ui/templates/ingress.yaml`<br>
+> параметр - path: должен быть именно `/*` , иначе потом не будут<br>
+> доступны страницы для создания новых постов <http://ingress-ip/new><br>
+> (возникнет ошибка `default backend - 404`)<br>
+
 Внесем изменения в файлы для Post:
 
 - `~/microservices/kubernetes/Charts/post/templates/deployment.yaml`
@@ -1758,13 +1763,13 @@ value: {{ .Values.databaseHost | default (printf "%s-mongodb" .Release.Name) }}
 
 Более подробная [документация](https://docs.helm.sh/chart_template_guide/#the-chart-template-developer-s-guide) по шаблонизации и функциям
 
-- `~/microservices/kubernetes/Charts/post/templates/ingress.yaml`
+- `~/microservices/kubernetes/Charts/post/templates/service.yaml`
 - `~/microservices/kubernetes/Charts/post/values.yaml` - значения собственных переменных
 
 Внесем изменения в файлы для Coment:
 
 - `~/microservices/kubernetes/Charts/comment/templates/deployment.yaml`
-- `~/microservices/kubernetes/Charts/comment/templates/ingress.yaml`
+- `~/microservices/kubernetes/Charts/comment/templates/service.yaml`
 - `~/microservices/kubernetes/Charts/comment/values.yaml` - значения собственных переменных
 
 ```
@@ -1924,6 +1929,8 @@ commentHost:   # конфигурации Chart’а в качестве док�
 commentPort:
 ```
 
+- `~/microservices/kubernetes/Charts/reddit/values.yaml` - задавать переменные для зависимостей прямо в values.yaml самого Chart'а reddit (Они перезаписывают значения переменных из зависимых чартов).
+
 #### Команды:
 
 - $ `helm dep update` - загрузить зависимости (когда Chart' не упакован в tgz архив)
@@ -1939,3 +1946,7 @@ commentPort:
 - $ `helm install reddit --name reddit-test` - **запустим наше приложение релиз `reddit-test`**
 
 - $ `kubectl get ingress` - узнаем IP для подключения к нашему приложению
+
+- $ `helm dep update ./reddit` - После обновления UI - нужно обновить зависимости чарта reddit.
+
+- $ `helm upgrade reddit-test ./reddit` - Обновите релиз, установленный в k8s
