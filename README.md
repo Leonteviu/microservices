@@ -1626,5 +1626,8 @@ $ kubectl config set-context
 
 ### Команды:
 
+- $ `terraform apply` - развернем кластер
+- $ `gcloud container clusters get-credentials cluster-1 --zone us-central1-a --project infra-179710` - подключемся к клстеру в [GCE](https://console.cloud.google.com/kubernetes) нажмем `подключиться` и скопируем ссылку
 - $ `kubectl apply -f tiller.yml`
 - $ `helm init --service-account tiller` - запустим tiller-сервер
+- $ `kubectl get pods -n kube-system --selector app=helm` - проверим
