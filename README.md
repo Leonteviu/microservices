@@ -1950,3 +1950,49 @@ commentPort:
 - $ `helm dep update ./reddit` - После обновления UI - нужно обновить зависимости чарта reddit.
 
 - $ `helm upgrade reddit-test ./reddit` - Обновите релиз, установленный в k8s
+
+## Развертывание Gitlab в Kubernetes
+
+```
+Необходимо:
+
+$ terraform apply - поднимем кластер
+$ gcloud container clusters get-credentials cluster-1 --zone us-central1-a --project infra-179710 - подключимся к кластеру
+
+Добавим в настройки нашего кластера новый пул узлов:
+- назовите его bigpool
+- 1 узел типа n2-standard (7,5 Гб, 2 виртуальных ЦП)
+- Размер диска 20-40 Гб
+Отключите RBAC для упрощения работы (Gitlab-Omnibus пока не
+подготовлен для этого, а самим это в рамках работы смысла
+делать нет).
+
+$ kubectl apply -f tiller.yml
+
+$ helm init --service-account tiller - запустим tiller-сервер
+```
+
+### Файлы
+
+Откорректируем файлы
+
+- `gitlab-omnibus/values.yaml`
+- `gitlab-omnibus/templates/gitlab/gitlab-svc.yaml`
+- `gitlab-omnibus/templates/ingress/gitlab-ingress.yaml`
+
+### Команды
+
+Gitlab будем ставить также с помощью Helm Chart'а из пакета Omnibus.
+
+- $ `helm repo add gitlab https://charts.gitlab.io` - Добавим репозиторий Gitlab
+- $ `helm fetch gitlab/gitlab-omnibus --version 0.1.36 --untar` - Мы будем менять конфигурацию Gitlab, поэтому скачаем Chart
+- $ `cd gitlab-omnibus`
+
+После корректировки файлов:
+
+- $ `helm install --name gitlab . -f values.yaml`
+- $ `kubectl get service -n nginx-ingress nginx` - Найти выданный EXTERNAL-IP-адрес ingress-контроллера nginx
+- $ `echo "<EXTERNAL-IP> gitlab-gitlab staging production” >> /etc/hosts` - Поместите запись в локальный файл /etc/hosts (поставьте свой IP-адрес)
+- $ `kubectl get pods` - проверить, что gitlab поднялся
+
+> Теперь можно зайти по адерсу <http://gitlab-gitlab>
