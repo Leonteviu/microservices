@@ -1972,6 +1972,8 @@ $ kubectl apply -f tiller.yml
 $ helm init --service-account tiller - запустим tiller-сервер
 ```
 
+### 1\. Установим Gitlab
+
 ### Файлы
 
 Откорректируем файлы
@@ -1996,3 +1998,24 @@ Gitlab будем ставить также с помощью Helm Chart'а из
 - $ `kubectl get pods` - проверить, что gitlab поднялся
 
 > Теперь можно зайти по адерсу <http://gitlab-gitlab>
+
+### 2\. Запустим проект
+
+Действия выполняются в WEB-интерфейсе по адресу <http://gitlab-gitlab>
+
+- Создать новую группу
+- Имя новой группы - свой Docker ID
+- Visibility Level - Public
+- Create a Mattermost team for this group - убрать галочку
+
+Перейдем по адресу <http://gitlab-gitlab/свой_Docker_ID>
+
+**Обратить внимание, что в файле `Gitlab_ci/reddit-deploy/ui/templates/ingress.yaml` параметр `path: /*` надо заменить на `path: /`. В противном случае, при обращении к WEB-странице сервиса UI будет возникать ошибка `default backend - 404`. Это связано с тем, что теперь у нас используется NGINX в качестве ingress-контроллера**
+
+```
+Файлы .gitlab-ci.yml, полученные в ходе работы,
+поместите в папку с исходниками для каждой компоненты приложения.
+Файл .gitlab-ci.yml для reddit-deploy поместите в charts
+Все изменения, которые были внесены в Chart’ы - перенести в
+папку charts, созданную вначале.
+```

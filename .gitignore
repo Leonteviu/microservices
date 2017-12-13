@@ -27,3 +27,6 @@ docker-compose.yml.my
 # Charts
 *.lock
 *.tgz
+
+# Gitlab
+Gitlab_ci/
