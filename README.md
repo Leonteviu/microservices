@@ -1582,7 +1582,7 @@ claimName: mongo-pvc-dynamic       <- Обновим PersistentVolumeClaim
 
 > На созданные Kubernetes'ом диски можно посмотреть в [web console](https://console.cloud.google.com/compute/disks)
 
-[В итоге, чтобы поднять наше приложение, доступное по HTTPS, защищенный с помощью TLS, с использованием Ingress правил, с Dynamic PVC,](reddit.md)
+[В итоге, чтобы поднять наше приложение, доступное по HTTPS, защищенный с помощью TLS, с использованием Ingress правил, с Dynamic PVC,](HomeWorks_files/HW_30/reddit.md)
 
 # Homework 31 (branch kubernetes-4)
 
@@ -1994,7 +1994,7 @@ Gitlab будем ставить также с помощью Helm Chart'а из
 
 - $ `helm install --name gitlab . -f values.yaml`
 - $ `kubectl get service -n nginx-ingress nginx` - Найти выданный EXTERNAL-IP-адрес ingress-контроллера nginx
-- $ `echo "<EXTERNAL-IP> gitlab-gitlab staging production” >> /etc/hosts` - Поместите запись в локальный файл /etc/hosts (поставьте свой IP-адрес)
+- $ `echo "<EXTERNAL-IP> gitlab-gitlab staging production leonteviu-ui-feature-3” >> /etc/hosts` - Поместите запись в локальный файл /etc/hosts (поставьте свой IP-адрес)
 - $ `kubectl get pods` - проверить, что gitlab поднялся
 
 > Теперь можно зайти по адерсу <http://gitlab-gitlab>
@@ -2007,10 +2007,133 @@ Gitlab будем ставить также с помощью Helm Chart'а из
 - Имя новой группы - свой Docker ID
 - Visibility Level - Public
 - Create a Mattermost team for this group - убрать галочку
+- В настройках группы выберите пункт CI/CD. Добавьте 2 переменные - CI_REGISTRY_USER - логин в dockerhub CI_REGISTRY_PASSWORD - пароль от Docker Hub
 
-Перейдем по адресу <http://gitlab-gitlab/свой_Docker_ID>
+  > Эти учетные данные будут использованы при сборке и<br>
+  > релизе docker-образов с помощью Gitlab CI<br>
 
-**Обратить внимание, что в файле `Gitlab_ci/reddit-deploy/ui/templates/ingress.yaml` параметр `path: /*` надо заменить на `path: /`. В противном случае, при обращении к WEB-странице сервиса UI будет возникать ошибка `default backend - 404`. Это связано с тем, что теперь у нас используется NGINX в качестве ingress-контроллера**
+- В группе создадим проекты 'reddit-deploy', post, ui и comment (сделайте также публичными)
+
+--------------------------------------------------------------------------------
+
+**Описанные ниже действия не вошли в коммиты**
+
+- Локально у себя создайте:
+- `Gitlab_ci/comment`
+- `Gitlab_ci/post`
+- `Gitlab_ci/ui`
+- `Gitlab_ci/reddit-deploy`
+
+- Перенесите исходные коды сервиса ui в Gitlab_ci/ui (post, comment - соответственно)
+
+- В директории Gitlab_ci/ui:
+
+- $ `git init` - Инициализируем локальный git-репозиторий
+
+- $ `git remote add origin http://gitlab-gitlab/leonteviu/ui.git`
+
+- $ `git add .`
+
+- $ `git commit -m “init”`
+
+- $ `git push origin master`
+
+> Для post и comment продейлайте аналогичные действия.<br>
+> Не забудьте указывать соответствующие названия<br>
+> репозиториев и групп.<br>
+
+- Перенести содержимое директории Charts (папки ui, post,comment, reddit) в Gitlab_ci/reddit-deploy
+
+- Запушить reddit-deploy в gitlab-проект reddit-deploy (команды аналогичные ui)
+
+- Создайте файл [Gitlab_ci/ui/.gitlab-ci.yml](HomeWorks_files/HW_31/doc_page_71/.gitlab-ci.yml)
+
+- Закомитьте и запуште в gitlab
+
+- Проверьте, что Pipeline работает
+
+- Создайте файл [Gitlab_ci/ui/.gitlab-ci.yml](HomeWorks_files/HW_31/doc_page_72/.gitlab-ci.yml)
+
+- Закомитьте и запуште в gitlab
+
+- Проверьте, что Pipeline работает
+
+  > В текущей конфигурации CI выполняет<br>
+  > 1) Build: Сборку докер-образа с тегом master<br>
+  > 2) Test: Фиктивное тестирование<br>
+  > 3) Release: Смену тега с master на тег из файла VERSION и<br>
+  > пуш docker-образа с новым<br>
+  > Job для выполнения каждой задачи запускается в отдельном<br>
+  > Kubernetes POD-е.<br>
+
+**! Для Post и Comment также добавьте в репозиторий .gitlab-ci.yml и проследите, что сборки образов прошли успешно.**
+
+- Дадим возможность разработчику запускать отдельное окружение в Kubernetes по коммиту в feature-бранч. Немного обновим конфиг ингресса для сервиса UI:
+
+[reddit-deploy/ui/templates/ingress.yml](HomeWorks_files/HW_31/doc_page_76/ingress.yml)
+
+> Здесь в качестве контроллера используется NGINX, поэтому `path: /` - отличие от ДЗ 30
+
+- Немного обновим конфиг ингресса для сервиса UI: [reddit-deploy/ui/templates/values.yml](HomeWorks_files/HW_31/doc_page_77/values.yml)
+
+- Дадим возможность разработчику запускать отдельное окружение в Kubernetes по коммиту в feature-бранч:
+
+- $ `git checkout -b feature/3`
+
+- Обновим [ui/.gitlab-ci.yml](HomeWorks_files/HW_31/doc_page_78/.gitlab-ci.yml) файл
+
+- $ `git commit -am "Add review feature"`
+
+- $ `git push origin feature/3`
+
+> В коммитах ветки feature/3 можете найти сделанные изменения<br>
+> Отметим, что мы добавили стадию review, запускающую<br>
+> приложение в k8s по коммиту в feature-бранчи (не master).<br>
+
+> Мы добавили функцию deploy, которая загружает Chart из репозитория<br>
+> reddit-deploy и делает релиз в неймспейсе review с образом<br>
+> приложения, собранным на стадии build.<br>
+
+- $ `helm ls` - Можем увидеть какие релизы запущены
+
+Созданные для таких целей окружения временны, их требуется "убивать", когда они больше не нужны.
+
+- Добавьте в [ui/.gitlab-ci.yml](HomeWorks_files/HW_31/doc_page_82/.gitlab-ci.yml):<br>
+  `stop_review` - stage<br>
+  `- cleanup` - строка<br>
+  `on_stop: stop_review` - строка<br>
+  `function delete()` - функцию удаления<br>
+
+- Запуште изменения в Git
+
+- зайдите в Pipelines ветки feature/3 (В Environments можно вызвать полученную web-страницу. ее алиас занесен в /etc/hosts ранее)
+
+- Запустить удаление окружения.
+
+- $ `helm ls` - окружения feature/3 быть не должно
+
+> Скопировать полученный файл .gitlab-ci.yml для ui в<br>
+> репозитории для post и comment.<br>
+> Проверить, что динамическое создание и удаление окружений<br>
+> работает и с ними как ожидалось<br>
+
+Теперь создадим staging и production среды для работы приложения.
+
+- Создайте файл [reddit-deploy/.gitlab-ci.yml](HomeWorks_files/HW_31/doc_page_88/.gitlab-ci.yml)
+- Запуште в репозиторий reddit-deploy ветку master
+
+> Этот файл отличается от предыдущих тем, что:<br>
+> 1) Не собирает docker-образы<br>
+> 2) Деплоит на статичные окружения (staging и production)<br>
+> 3) Не удаляет окружения<br>
+
+- Удостоверьтесь, что staging успешно завершен
+- В Environments найдите staging
+- Выкатываем на production И ждем пока пайплайн пройдет
+
+- $ `helm ls`
+
+--------------------------------------------------------------------------------
 
 ```
 Файлы .gitlab-ci.yml, полученные в ходе работы,
@@ -2019,3 +2142,11 @@ Gitlab будем ставить также с помощью Helm Chart'а из
 Все изменения, которые были внесены в Chart’ы - перенести в
 папку charts, созданную вначале.
 ```
+
+--------------------------------------------------------------------------------
+
+## Задание со звездочкой
+
+[.gitlab-ci.yml](HomeWorks_files/HW_31/zvezdochka/.gitlab-ci.yml) нужно поместить в репозитории UI, POST и COMMENT (в Gitlab_ci директории). При любом изменении исходного кода сервисов, необходимо внести также изменение в содержимое файла VERSION в исходном коде (например увеличить версию) и запушить в Gitlab.
+
+--------------------------------------------------------------------------------
