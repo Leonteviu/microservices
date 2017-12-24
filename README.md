@@ -69,3 +69,115 @@ Prometheus отлично подходит для работы с контейн
 > • уменьшен интервал сбора метрик (с 1 минуты до 30 секунд)<br>
 
 - $ `helm upgrade prom . -f custom_values.yml --install` - Запустите Prometheus в k8s
+
+#### Targets
+
+> Таргеты для сбора метрик найдены с помощью service discovery (SD),<br>
+> настроенного в конфиге prometheus (лежит в custom_values.yml)<br>
+
+```
+prometheus.yml:
+...
+- job_name: 'kubernetes-apiservers'
+...
+- job_name: 'kubernetes-nodes'
+  kubernetes_sd_configs:              Настройки Service Discovery
+    - role: node                      (для поиска target’ов)
+
+
+  scheme: https                        Настройки подключения к target’ам
+  tls_config:                          (для сбора метрик)
+    ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+    insecure_skip_verify: true
+  bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+
+relabel_configs:                 Настройки различных меток,
+                                 фильтрация найденных таргетов, их изменение
+...
+```
+
+Использование SD в kubernetes позволяет нам динамично менять кластер (как сами хосты, так и сервисы и приложения) Цели для мониторинга находим c помощью запросов к k8s API:
+
+```
+prometheus.yml:
+...
+  scrape_configs:
+    - job_name: 'kubernetes-nodes'
+      kubernetes_sd_configs:
+        - role: node
+
+        Role
+        объект, который нужно найти:
+        • node
+        • endpoints
+        • pod
+        • service
+        • ingress
+```
+
+```
+...
+scrape_configs:
+  - job_name: 'kubernetes-nodes'
+    kubernetes_sd_configs:
+      - role: node
+```
+
+> Т.к. сбор метрик prometheus осуществляется поверх<br>
+> стандартного HTTP-протокола, то могут понадобится доп.<br>
+> настройки для безопасного доступа к метрикам.<br>
+> Ниже приведены настройки для сбора метрик из k8s API.<br>
+
+```
+scheme: https
+tls_config:
+  ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+  insecure_skip_verify: true
+bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+
+Здесь
+1) Схема подключения - http (default) или https
+2) Конфиг TLS - коревой сертификат сервера для проверки достоверности сервера
+3) Токен для аутентификации на сервере
+```
+
+```
+relabel_configs:
+    - action: labelmap
+      regex: __meta_kubernetes_node_label_(.+)
+    - target_label: __address__
+      replacement: kubernetes.default.svc:443
+    - source_labels: [__meta_kubernetes_node_name]
+      regex: (.+)
+      target_label: __metrics_path__
+      replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+
+Здесь
+1) преобразовать все k8s лейблы таргета в лейблы prometheus
+2) Поменять лейбл для адреса сбора метрик
+3) Поменять лейбл для пути сбора метрик
+```
+
+> Подробнее о том, как работает [relabel_config](https://prometheus.io/docs/prometheus/latest/configuration/configuration/#%3Crelabel_config%3E)
+
+Все найденные на эндпоинтах метрики сразу же отобразятся в списке (вкладка Graph). Метрики Cadvisor начинаются с container_.
+
+Cadvisor собирает лишь информацию о потреблении ресурсов и производительности отдельных docker-контейнеров. При этом он ничего не знает о сущностях k8s (деплойменты, репликасеты, ...).
+
+Для сбора этой информации будем использовать сервис [kube-state-metrics](https://github.com/kubernetes/kube-state-metrics). Он входит в чарт Prometheus. Включим его.
+
+- `prometheus/custom_values.yml`
+
+```
+kubeStateMetrics:
+  ## If false, kube-state-metrics will not be installed
+  ##
+  enabled: true
+```
+
+- $ `helm upgrade prom ./prometheus -f custom_values.yml --install` - Обновим релиз
+
+По аналогии включим `nodeExporter`
+
+- $ `helm upgrade prom ./prometheus -f custom_values.yml --install` - Обновим релиз
