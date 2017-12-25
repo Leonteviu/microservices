@@ -314,3 +314,23 @@ __meta_kubernetes_namespace   <--- Для разных лейблов
 По аналогии создадим и `job_name: 'reddit-staging'` для окружения staging
 
 > Если есть необходимость вывести для production и staging одновременно, то `regex: reddit;(production|staging)+`
+
+Разобьем конфигурацию job'а `reddit-endpoints` так,чтобы было 3 job'а для каждой из компонент приложений (post-endpoints, comment-endpoints, ui-endpoints), а reddit-endpoints уберем.
+
+Пример для `- job_name: 'ui-endpoints'`:
+
+```
+- job_name: 'ui-endpoints'
+  kubernetes_sd_configs:
+    - role: endpoints
+  relabel_configs:
+    - source_labels: [__meta_kubernetes_service_label_app, __meta_kubernetes_service_label_component]
+      action: keep
+      regex: reddit;(ui)+
+    - action: labelmap
+      regex: __meta_kubernetes_service_label_(.+)
+    - source_labels: [__meta_kubernetes_namespace]
+      target_label: kubernetes_namespace
+    - source_labels: [__meta_kubernetes_service_name]
+      target_label: kubernetes_name
+```
