@@ -283,3 +283,30 @@ custom_values.yml:
 Обновим релиз prometheus:
 
 - $ `helm upgrade prom ./prometheus -f custom_values.yml --install`
+
+Сейчас мы собираем метрики со всех сервисов reddit'а в 1 группе target-ов. Мы можем отделить target-ы компонент друг от друга (по окружениям, по самим компонентам), а также выключать и включать опцию мониторинга для них с помощью все тех же label-ов. Например, добавим в конфиг еще 1 job:
+
+```
+- job_name: 'reddit-production'
+   kubernetes_sd_configs:
+     - role: endpoints
+   relabel_configs:
+     - action: labelmap
+       regex: __meta_kubernetes_service_label_(.+)
+     - source_labels: [__meta_kubernetes_service_label_app, __meta_kubernetes_namespace]
+       action: keep
+       regex: reddit;(production|staging)+
+     - source_labels: [__meta_kubernetes_namespace]
+       target_label: kubernetes_namespace
+     - source_labels: [__meta_kubernetes_service_name]
+       target_label: kubernetes_name
+
+Здесь:
+
+__meta_kubernetes_namespace   <--- Для разных лейблов
+(production|staging)+         <--- разные regex
+```
+
+Обновим релиз prometheus:
+
+- $ `helm upgrade prom ./prometheus -f custom_values.yml --install`
