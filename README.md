@@ -335,7 +335,7 @@ __meta_kubernetes_namespace   <--- Для разных лейблов
       target_label: kubernetes_name
 ```
 
-#### Визуализация
+### Визуализация
 
 Поставим **Grafana** с помощью helm:
 
@@ -347,3 +347,11 @@ helm upgrade --install grafana stable/grafana --set "server.adminPassword=admin"
 ```
 
 Немного подожде и перейдем по адресу <http://reddit-grafana> (логин: admin пароль: admin)
+
+Добавим самый распространенный [dashboard](https://grafana.com/dashboards/315) для отслеживания состояния ресурсов k8s
+
+Также можно добавить свои ранее созданные[dashboards](https://github.com/Leonteviu/microservices/tree/master/dashboards)
+
+#### Templating
+
+В текущий момент на графиках, относящихся к приложению, одновременно отображены значения метрик со всех источников сразу. При большом количестве сред и при их динамичном изменении имеет смысл сделать динамичной и удобно настройку наших дашбордов в Grafana. Сделать это можно в нашем случае с помощью механизма templating'а.
