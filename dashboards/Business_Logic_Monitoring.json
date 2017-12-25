@@ -1,8 +1,8 @@
 {
   "__inputs": [
     {
-      "name": "DS_PROMETHEUS_SERVER",
-      "label": "Prometheus Server",
+      "name": "DS_PROMETHEUS_DATA-SOURCE",
+      "label": "prometheus data-source",
       "description": "",
       "type": "datasource",
       "pluginId": "prometheus",
@@ -14,7 +14,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "4.6.1"
+      "version": "4.6.3"
     },
     {
       "type": "panel",
@@ -59,7 +59,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_PROMETHEUS_SERVER}",
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "decimals": null,
           "description": "Count posts in 1 hour",
           "fill": 1,
@@ -95,7 +95,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "rate(post_count[1h])",
+              "expr": "rate(post_count{namespace=~\"$namespace\"}[1h])",
               "format": "time_series",
               "hide": false,
               "instant": false,
@@ -159,7 +159,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_PROMETHEUS_SERVER}",
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "fill": 1,
           "id": 3,
           "legend": {
@@ -187,7 +187,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "rate(comment_count[1h])",
+              "expr": "rate(comment_count{namespace=~\"$namespace\"}[1h])",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "",
@@ -247,7 +247,7 @@
           "bars": false,
           "dashLength": 10,
           "dashes": false,
-          "datasource": "${DS_PROMETHEUS_SERVER}",
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "description": "",
           "fill": 1,
           "id": 2,
@@ -278,7 +278,7 @@
           "steppedLine": false,
           "targets": [
             {
-              "expr": "increase(comment_count[1h])",
+              "expr": "increase(comment_count{namespace=~\"$namespace\"}[1h])",
               "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "increase per 1 hour",
@@ -334,7 +334,28 @@
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Env",
+        "multi": true,
+        "name": "namespace",
+        "options": [],
+        "query": "label_values(namespace)",
+        "refresh": 1,
+        "regex": "/.+/",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
   },
   "time": {
     "from": "now-1h",
@@ -367,5 +388,5 @@
   },
   "timezone": "",
   "title": "Business_Logic_Monitoring",
-  "version": 17
+  "version": 2
 }

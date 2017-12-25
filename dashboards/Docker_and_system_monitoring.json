@@ -1,8 +1,8 @@
 {
   "__inputs": [
     {
-      "name": "DS_PROMETHEUS",
-      "label": "Prometheus",
+      "name": "DS_PROMETHEUS_DATA-SOURCE",
+      "label": "prometheus data-source",
       "description": "",
       "type": "datasource",
       "pluginId": "prometheus",
@@ -11,10 +11,10 @@
   ],
   "__requires": [
     {
-      "type": "panel",
-      "id": "singlestat",
-      "name": "Singlestat",
-      "version": ""
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "4.6.3"
     },
     {
       "type": "panel",
@@ -23,213 +23,49 @@
       "version": ""
     },
     {
-      "type": "panel",
-      "id": "table",
-      "name": "Table",
-      "version": ""
-    },
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "4.0.0-beta2"
-    },
-    {
       "type": "datasource",
       "id": "prometheus",
       "name": "Prometheus",
       "version": "1.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "singlestat",
+      "name": "Singlestat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
     }
   ],
-  "id": null,
-  "title": "Docker and system monitoring",
-  "description": "A simple overview of the most important Docker host and container metrics. (cAdvisor/Prometheus)",
-  "tags": [],
-  "style": "dark",
-  "timezone": "browser",
-  "editable": true,
-  "sharedCrosshair": true,
-  "hideControls": false,
-  "time": {
-    "from": "now-24h",
-    "to": "now"
-  },
-  "timepicker": {
-    "refresh_intervals": [
-      "5s",
-      "10s",
-      "30s",
-      "1m",
-      "5m",
-      "15m",
-      "30m",
-      "1h",
-      "2h",
-      "1d"
-    ],
-    "time_options": [
-      "5m",
-      "15m",
-      "1h",
-      "6h",
-      "12h",
-      "24h",
-      "2d",
-      "7d",
-      "30d"
-    ]
-  },
-  "templating": {
+  "annotations": {
     "list": [
       {
-        "allValue": ".+",
-        "current": {},
-        "datasource": "${DS_PROMETHEUS}",
-        "hide": 0,
-        "includeAll": true,
-        "label": "Container Group",
-        "multi": true,
-        "name": "containergroup",
-        "options": [],
-        "query": "label_values(container_group)",
-        "refresh": 1,
-        "regex": "",
-        "sort": 0,
-        "tagValuesQuery": null,
-        "tagsQuery": null,
-        "type": "query"
-      },
-      {
-        "auto": true,
-        "auto_count": 50,
-        "auto_min": "50s",
-        "current": {
-          "text": "auto",
-          "value": "$__auto_interval"
-        },
-        "datasource": null,
-        "hide": 0,
-        "includeAll": false,
-        "label": "Interval",
-        "multi": false,
-        "name": "interval",
-        "options": [
-          {
-            "text": "auto",
-            "value": "$__auto_interval",
-            "selected": true
-          },
-          {
-            "text": "30s",
-            "value": "30s",
-            "selected": false
-          },
-          {
-            "text": "1m",
-            "value": "1m",
-            "selected": false
-          },
-          {
-            "text": "2m",
-            "value": "2m",
-            "selected": false
-          },
-          {
-            "text": "3m",
-            "value": "3m",
-            "selected": false
-          },
-          {
-            "text": "5m",
-            "value": "5m",
-            "selected": false
-          },
-          {
-            "text": "7m",
-            "value": "7m",
-            "selected": false
-          },
-          {
-            "text": "10m",
-            "value": "10m",
-            "selected": false
-          },
-          {
-            "text": "30m",
-            "value": "30m",
-            "selected": false
-          },
-          {
-            "text": "1h",
-            "value": "1h",
-            "selected": false
-          },
-          {
-            "text": "6h",
-            "value": "6h",
-            "selected": false
-          },
-          {
-            "text": "12h",
-            "value": "12h",
-            "selected": false
-          },
-          {
-            "text": "1d",
-            "value": "1d",
-            "selected": false
-          },
-          {
-            "text": "7d",
-            "value": "7d",
-            "selected": false
-          },
-          {
-            "text": "14d",
-            "value": "14d",
-            "selected": false
-          },
-          {
-            "text": "30d",
-            "value": "30d",
-            "selected": false
-          }
-        ],
-        "query": "30s,1m,2m,3m,5m,7m,10m,30m,1h,6h,12h,1d,7d,14d,30d",
-        "refresh": 2,
-        "type": "interval"
-      },
-      {
-        "allValue": null,
-        "current": {},
-        "datasource": "${DS_PROMETHEUS}",
-        "hide": 0,
-        "includeAll": false,
-        "label": "Node",
-        "multi": true,
-        "name": "server",
-        "options": [],
-        "query": "label_values(node_boot_time, instance)",
-        "refresh": 1,
-        "regex": "/([^:]+):.*/",
-        "sort": 0,
-        "tagValuesQuery": null,
-        "tagsQuery": null,
-        "type": "query"
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
       }
     ]
   },
-  "annotations": {
-    "list": []
-  },
-  "refresh": "5m",
-  "schemaVersion": 13,
-  "version": 57,
-  "links": [],
+  "description": "A simple overview of the most important Docker host and container metrics. (cAdvisor/Prometheus)",
+  "editable": true,
   "gnetId": 893,
+  "graphTooltip": 1,
+  "hideControls": false,
+  "id": null,
+  "links": [],
+  "refresh": "5m",
   "rows": [
     {
-      "title": "Dashboard Row",
+      "collapse": false,
+      "height": 150,
       "panels": [
         {
           "cacheTimeout": null,
@@ -240,7 +76,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(50, 172, 45, 0.97)"
           ],
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "decimals": 0,
           "editable": true,
           "error": false,
@@ -288,6 +124,7 @@
             "lineColor": "rgb(31, 120, 193)",
             "show": false
           },
+          "tableColumn": "",
           "targets": [
             {
               "expr": "time() - node_boot_time{instance=~\"$server:.*\"}",
@@ -320,7 +157,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(50, 172, 45, 0.97)"
           ],
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "format": "none",
@@ -366,6 +203,7 @@
             "lineColor": "rgb(31, 120, 193)",
             "show": false
           },
+          "tableColumn": "",
           "targets": [
             {
               "expr": "count(rate(container_last_seen{name=~\".+\"}[$interval]))",
@@ -396,7 +234,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(245, 54, 54, 0.9)"
           ],
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "decimals": 1,
           "editable": true,
           "error": false,
@@ -443,9 +281,11 @@
             "lineColor": "rgb(31, 120, 193)",
             "show": false
           },
+          "tableColumn": "",
           "targets": [
             {
               "expr": "min((node_filesystem_size{fstype=~\"xfs|ext4\",instance=~\"$server:.*\"} - node_filesystem_free{fstype=~\"xfs|ext4\",instance=~\"$server:.*\"} )/ node_filesystem_size{fstype=~\"xfs|ext4\",instance=~\"$server:.*\"})",
+              "format": "time_series",
               "hide": false,
               "intervalFactor": 2,
               "refId": "A",
@@ -474,7 +314,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(245, 54, 54, 0.9)"
           ],
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "decimals": 0,
           "editable": true,
           "error": false,
@@ -521,6 +361,7 @@
             "lineColor": "rgb(31, 120, 193)",
             "show": false
           },
+          "tableColumn": "",
           "targets": [
             {
               "expr": "((node_memory_MemTotal{instance=~\"$server:.*\"} - node_memory_MemAvailable{instance=~\"$server:.*\"}) / node_memory_MemTotal{instance=~\"$server:.*\"}) * 100",
@@ -551,7 +392,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(245, 54, 54, 0.9)"
           ],
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "decimals": 0,
           "editable": true,
           "error": false,
@@ -598,6 +439,7 @@
             "lineColor": "rgb(31, 120, 193)",
             "show": false
           },
+          "tableColumn": "",
           "targets": [
             {
               "expr": "(node_memory_SwapTotal{instance=~'$server:.*'} - node_memory_SwapFree{instance=~'$server:.*'})",
@@ -629,7 +471,7 @@
             "rgba(237, 129, 40, 0.89)",
             "rgba(50, 172, 45, 0.97)"
           ],
-          "datasource": "${DS_PROMETHEUS}",
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "decimals": 0,
           "editable": true,
           "error": false,
@@ -676,6 +518,7 @@
             "lineColor": "rgb(69, 193, 31)",
             "show": true
           },
+          "tableColumn": "",
           "targets": [
             {
               "expr": "node_load1{instance=~\"$server:.*\"} / count by(job, instance)(count by(job, instance, cpu)(node_cpu{instance=~\"$server:.*\"}))",
@@ -698,23 +541,25 @@
           "valueName": "avg"
         }
       ],
-      "showTitle": false,
-      "titleSize": "h6",
-      "height": 150,
       "repeat": null,
-      "repeatRowId": null,
       "repeatIteration": null,
-      "collapse": false
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Dashboard Row",
+      "titleSize": "h6"
     },
     {
-      "title": "New row",
+      "collapse": false,
+      "height": 202,
       "panels": [
         {
           "aliasColors": {
             "SENT": "#BF1B00"
           },
           "bars": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fill": 1,
@@ -738,6 +583,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 2,
           "stack": false,
           "steppedLine": false,
@@ -771,6 +617,7 @@
           "transparent": false,
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": false,
@@ -800,7 +647,9 @@
             "{id=\"/\",instance=\"cadvisor:8080\",job=\"prometheus\"}": "#BA43A9"
           },
           "bars": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fill": 1,
@@ -824,6 +673,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 2,
           "stack": true,
           "steppedLine": false,
@@ -886,6 +736,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": false,
@@ -947,7 +798,9 @@
           },
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "decimals": 0,
           "editable": true,
           "error": false,
@@ -971,6 +824,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 2,
           "stack": false,
           "steppedLine": false,
@@ -1002,6 +856,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": false,
@@ -1068,7 +923,9 @@
             "{}": "#BF1B00"
           },
           "bars": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fill": 1,
@@ -1097,6 +954,7 @@
               "yaxis": 1
             }
           ],
+          "spaceLength": 10,
           "span": 2,
           "stack": true,
           "steppedLine": false,
@@ -1130,6 +988,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": false,
@@ -1194,7 +1053,9 @@
             "Unavailable Memory": "#7EB26D"
           },
           "bars": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fill": 1,
@@ -1218,6 +1079,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 2,
           "stack": true,
           "steppedLine": false,
@@ -1371,6 +1233,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": false,
@@ -1401,7 +1264,9 @@
             "OUT on /sda": "#890F02"
           },
           "bars": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fill": 1,
@@ -1425,6 +1290,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 2,
           "stack": false,
           "steppedLine": false,
@@ -1459,6 +1325,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": false,
@@ -1484,21 +1351,23 @@
           ]
         }
       ],
-      "showTitle": false,
-      "titleSize": "h6",
-      "height": 202,
       "repeat": null,
-      "repeatRowId": null,
       "repeatIteration": null,
-      "collapse": false
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "New row",
+      "titleSize": "h6"
     },
     {
-      "title": "New row",
+      "collapse": false,
+      "height": 251,
       "panels": [
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fill": 1,
@@ -1524,12 +1393,14 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
               "expr": "sum(rate(container_network_receive_bytes_total{name=~\".+\"}[$interval])) by (name)",
+              "format": "time_series",
               "intervalFactor": 2,
               "legendFormat": "{{name}}",
               "refId": "A",
@@ -1537,6 +1408,7 @@
             },
             {
               "expr": "- rate(container_network_transmit_bytes_total{name=~\".+\"}[$interval])",
+              "format": "time_series",
               "hide": true,
               "intervalFactor": 2,
               "legendFormat": "{{name}}",
@@ -1557,6 +1429,7 @@
           "transparent": false,
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -1584,7 +1457,9 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fill": 1,
@@ -1612,6 +1487,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 6,
           "stack": false,
           "steppedLine": false,
@@ -1645,6 +1521,7 @@
           "transparent": false,
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -1670,21 +1547,23 @@
           ]
         }
       ],
-      "showTitle": false,
-      "titleSize": "h6",
-      "height": 251,
       "repeat": null,
-      "repeatRowId": null,
       "repeatIteration": null,
-      "collapse": false
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "New row",
+      "titleSize": "h6"
     },
     {
-      "title": "Row",
+      "collapse": false,
+      "height": 247,
       "panels": [
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fill": 5,
@@ -1710,6 +1589,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 6,
           "stack": true,
           "steppedLine": false,
@@ -1737,6 +1617,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -1761,21 +1642,23 @@
           ]
         }
       ],
-      "showTitle": false,
-      "titleSize": "h6",
-      "height": 247,
       "repeat": null,
-      "repeatRowId": null,
       "repeatIteration": null,
-      "collapse": false
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Row",
+      "titleSize": "h6"
     },
     {
-      "title": "Dashboard Row",
+      "collapse": false,
+      "height": 250,
       "panels": [
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fill": 3,
@@ -1801,6 +1684,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 6,
           "stack": true,
           "steppedLine": false,
@@ -1834,6 +1718,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -1861,7 +1746,9 @@
         {
           "aliasColors": {},
           "bars": false,
-          "datasource": "${DS_PROMETHEUS}",
+          "dashLength": 10,
+          "dashes": false,
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fill": 3,
@@ -1887,6 +1774,7 @@
           "points": false,
           "renderer": "flot",
           "seriesOverrides": [],
+          "spaceLength": 10,
           "span": 6,
           "stack": true,
           "steppedLine": false,
@@ -1920,6 +1808,7 @@
           },
           "type": "graph",
           "xaxis": {
+            "buckets": null,
             "mode": "time",
             "name": null,
             "show": true,
@@ -1945,16 +1834,16 @@
           ]
         }
       ],
-      "showTitle": false,
-      "titleSize": "h6",
-      "height": 250,
       "repeat": null,
-      "repeatRowId": null,
       "repeatIteration": null,
-      "collapse": false
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Dashboard Row",
+      "titleSize": "h6"
     },
     {
-      "title": "Dashboard Row",
+      "collapse": false,
+      "height": 361,
       "panels": [
         {
           "columns": [
@@ -1963,6 +1852,7 @@
               "value": "current"
             }
           ],
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fontSize": "100%",
@@ -2032,6 +1922,7 @@
               "value": "current"
             }
           ],
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fontSize": "100%",
@@ -2100,6 +1991,7 @@
               "value": "current"
             }
           ],
+          "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
           "editable": true,
           "error": false,
           "fontSize": "100%",
@@ -2163,13 +2055,211 @@
           "type": "table"
         }
       ],
-      "showTitle": false,
-      "titleSize": "h6",
-      "height": 361,
       "repeat": null,
-      "repeatRowId": null,
       "repeatIteration": null,
-      "collapse": false
+      "repeatRowId": null,
+      "showTitle": false,
+      "title": "Dashboard Row",
+      "titleSize": "h6"
     }
-  ]
+  ],
+  "schemaVersion": 14,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".+",
+        "current": {},
+        "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Container Group",
+        "multi": true,
+        "name": "containergroup",
+        "options": [],
+        "query": "label_values(container_group)",
+        "refresh": 1,
+        "regex": "",
+        "sort": 0,
+        "tagValuesQuery": null,
+        "tags": [],
+        "tagsQuery": null,
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "auto": true,
+        "auto_count": 50,
+        "auto_min": "50s",
+        "current": {
+          "text": "auto",
+          "value": "$__auto_interval"
+        },
+        "datasource": null,
+        "hide": 0,
+        "includeAll": false,
+        "label": "Interval",
+        "multi": false,
+        "name": "interval",
+        "options": [
+          {
+            "selected": true,
+            "text": "auto",
+            "value": "$__auto_interval"
+          },
+          {
+            "selected": false,
+            "text": "30s",
+            "value": "30s"
+          },
+          {
+            "selected": false,
+            "text": "1m",
+            "value": "1m"
+          },
+          {
+            "selected": false,
+            "text": "2m",
+            "value": "2m"
+          },
+          {
+            "selected": false,
+            "text": "3m",
+            "value": "3m"
+          },
+          {
+            "selected": false,
+            "text": "5m",
+            "value": "5m"
+          },
+          {
+            "selected": false,
+            "text": "7m",
+            "value": "7m"
+          },
+          {
+            "selected": false,
+            "text": "10m",
+            "value": "10m"
+          },
+          {
+            "selected": false,
+            "text": "30m",
+            "value": "30m"
+          },
+          {
+            "selected": false,
+            "text": "1h",
+            "value": "1h"
+          },
+          {
+            "selected": false,
+            "text": "6h",
+            "value": "6h"
+          },
+          {
+            "selected": false,
+            "text": "12h",
+            "value": "12h"
+          },
+          {
+            "selected": false,
+            "text": "1d",
+            "value": "1d"
+          },
+          {
+            "selected": false,
+            "text": "7d",
+            "value": "7d"
+          },
+          {
+            "selected": false,
+            "text": "14d",
+            "value": "14d"
+          },
+          {
+            "selected": false,
+            "text": "30d",
+            "value": "30d"
+          }
+        ],
+        "query": "30s,1m,2m,3m,5m,7m,10m,30m,1h,6h,12h,1d,7d,14d,30d",
+        "refresh": 2,
+        "type": "interval"
+      },
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Node",
+        "multi": true,
+        "name": "server",
+        "options": [],
+        "query": "label_values(node_boot_time, instance)",
+        "refresh": 1,
+        "regex": "/([^:]+):.*/",
+        "sort": 0,
+        "tagValuesQuery": null,
+        "tags": [],
+        "tagsQuery": null,
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_PROMETHEUS_DATA-SOURCE}",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Env",
+        "multi": true,
+        "name": "namespace",
+        "options": [],
+        "query": "label_values(namespace)",
+        "refresh": 1,
+        "regex": "/.+/",
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "timezone": "browser",
+  "title": "Docker and system monitoring",
+  "version": 2
 }
