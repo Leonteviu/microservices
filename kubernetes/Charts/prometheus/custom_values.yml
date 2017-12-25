@@ -807,6 +807,23 @@ serverFiles:
             action: replace
             target_label: kubernetes_pod_name
 
+      # Теперь мы можем использовать механизм ServiceDiscovery для
+      # обнаружения приложений, запущенных в k8s.
+      # Приложения будем искать так же, как и служебные сервисы k8s.
+      #
+      # Используем действие keep, чтобы оставить только эндпоинты сервисов
+      # с метками “app=reddit”
+
+      - job_name: 'reddit-endpoints'
+        kubernetes_sd_configs:
+          - role: endpoints
+        relabel_configs:
+        #  - source_labels: [__meta_kubernetes_service_label_app]
+        #    action: keep
+        #    regex: reddit
+          - action: labelmap
+            regex: __meta_kubernetes_service_label_(.+)
+
 networkPolicy:
   ## Enable creation of NetworkPolicy resources.
   ##

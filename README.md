@@ -191,3 +191,69 @@ kubeStateMetrics:
 - $ `helm upgrade reddit-test ./reddit --install`
 - $ `helm upgrade production --namespace production ./reddit --install`
 - $ `helm upgrade staging --namespace staging ./reddit --install`
+
+Раньше мы "хардкодили" адреса/dns-имена наших приложений для сбора метрик с них.
+
+```
+prometheus.yml
+
+- job_name: 'ui'
+    static_configs:
+      - targets:
+        - 'ui:9292'
+
+- job_name: 'comment'
+    static_configs:
+      - targets:
+        - 'comment:9292'
+```
+
+Теперь мы можем использовать механизм ServiceDiscovery для обнаружения приложений, запущенных в k8s.
+
+Приложения будем искать так же, как и служебные сервисы k8s.
+
+Внесем изменения в конфиг Prometheus:
+
+```
+custom_values.yml
+
+- job_name: 'reddit-endpoints'
+    kubernetes_sd_configs:
+      - role: endpoints
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_label_app]
+        action: keep              <--- Используем действие keep, чтобы оставить
+        regex: reddit                  только эндпоинты сервисов с метками
+                                       “app=reddit”
+```
+
+Обновим релиз prometheus:
+
+- $ `helm upgrade prom ./prometheus -f custom_values.yml --install`
+
+Мы получили эндпоинты, но что это за поды мы не знаем. Добавим метки k8s
+
+Все лейблы и аннотации k8s изначально отображаются в prometheus в формате:
+
+```
+__meta_kubernetes_service_label_labelname
+__meta_kubernetes_service_annotation_annotationname
+```
+
+custom_values.yml:
+
+```
+- job_name: 'reddit-endpoints'
+  kubernetes_sd_configs:
+    - role: endpoints
+  relabel_configs:
+  #  - source_labels: [__meta_kubernetes_service_label_app]
+  #    action: keep
+  #    regex: reddit
+    - action: labelmap                            <-- Отобразить все совпадения групп из regex
+      regex: __meta_kubernetes_service_label_(.+)     в label’ы Prometheus
+```
+
+Обновим релиз prometheus:
+
+- $ `helm upgrade prom ./prometheus -f custom_values.yml --install`
