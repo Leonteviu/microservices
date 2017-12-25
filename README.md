@@ -181,3 +181,13 @@ kubeStateMetrics:
 По аналогии включим `nodeExporter`
 
 - $ `helm upgrade prom ./prometheus -f custom_values.yml --install` - Обновим релиз
+
+#### Метрики приложений
+
+**Для продолжения выполнения убедиться, что проделаны [следующие действия](https://github.com/Leonteviu/microservices#%D0%9A%D0%BE%D0%BC%D0%B0%D0%BD%D0%B4%D1%8B-2) должен присустствовать kubernetes/Charts/reddit/requirements.lock и создана директория charts с зависимостями в виде архивов comment-1.0.0.tgz, mongodb-0.4.20.tgz, post-1.0.0.tgz и ui-1.0.0.tgz**
+
+Запустите приложение из helm чарта reddit:
+
+- $ `helm upgrade reddit-test ./reddit --install`
+- $ `helm upgrade production --namespace production ./reddit --install`
+- $ `helm upgrade staging --namespace staging ./reddit --install`
