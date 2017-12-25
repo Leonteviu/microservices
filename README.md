@@ -257,3 +257,29 @@ custom_values.yml:
 Обновим релиз prometheus:
 
 - $ `helm upgrade prom ./prometheus -f custom_values.yml --install`
+
+Теперь мы должны увидеть лейблы k8s, присвоенные POD'ам
+
+Добавим еще label'ы для prometheus и обновим helm-релиз. Т.к. метки вида `__meta_*` не публикуются, то нужно создать свои, перенеся в них информацию
+
+custom_values.yml:
+
+```
+- job_name: 'reddit-endpoints'
+  kubernetes_sd_configs:
+    - role: endpoints
+  relabel_configs:
+  #  - source_labels: [__meta_kubernetes_service_label_app]
+  #    action: keep
+  #    regex: reddit
+    - action: labelmap
+      regex: __meta_kubernetes_service_label_(.+)
+    - source_labels: [__meta_kubernetes_namespace]
+      target_label: kubernetes_namespace
+    - source_labels: [__meta_kubernetes_service_name]
+      target_label: kubernetes_name
+```
+
+Обновим релиз prometheus:
+
+- $ `helm upgrade prom ./prometheus -f custom_values.yml --install`
