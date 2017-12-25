@@ -295,7 +295,7 @@ custom_values.yml:
        regex: __meta_kubernetes_service_label_(.+)
      - source_labels: [__meta_kubernetes_service_label_app, __meta_kubernetes_namespace]
        action: keep
-       regex: reddit;(production|staging)+
+       regex: reddit;(production)+                   <--------PRODUCTION
      - source_labels: [__meta_kubernetes_namespace]
        target_label: kubernetes_namespace
      - source_labels: [__meta_kubernetes_service_name]
@@ -310,3 +310,7 @@ __meta_kubernetes_namespace   <--- Для разных лейблов
 Обновим релиз prometheus:
 
 - $ `helm upgrade prom ./prometheus -f custom_values.yml --install`
+
+По аналогии создадим и `job_name: 'reddit-staging'` для окружения staging
+
+> Если есть необходимость вывести для production и staging одновременно, то `regex: reddit;(production|staging)+`
