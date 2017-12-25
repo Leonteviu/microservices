@@ -334,3 +334,16 @@ __meta_kubernetes_namespace   <--- Для разных лейблов
     - source_labels: [__meta_kubernetes_service_name]
       target_label: kubernetes_name
 ```
+
+#### Визуализация
+
+Поставим **Grafana** с помощью helm:
+
+```
+helm upgrade --install grafana stable/grafana --set "server.adminPassword=admin" \
+--set "server.service.type=NodePort" \
+--set "server.ingress.enabled=true" \
+--set "server.ingress.hosts={reddit-grafana}"
+```
+
+Немного подожде и перейдем по адресу <http://reddit-grafana> (логин: admin пароль: admin)
