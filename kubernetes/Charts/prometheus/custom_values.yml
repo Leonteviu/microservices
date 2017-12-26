@@ -4,7 +4,7 @@ rbac:
 alertmanager:
   ## If false, alertmanager will not be installed
   ##
-  enabled: false
+  enabled: true
 
   # Defines the serviceAccountName to use when `rbac.create=false`
   serviceAccountName: default
@@ -43,7 +43,7 @@ alertmanager:
   ingress:
     ## If true, alertmanager Ingress will be created
     ##
-    enabled: false
+    enabled: true
 
     ## alertmanager Ingress annotations
     ##
@@ -54,8 +54,10 @@ alertmanager:
     ## alertmanager Ingress hostnames
     ## Must be provided if Ingress is enabled
     ##
-    hosts: []
+    #hosts: []
     #   - alertmanager.domain.com
+    hosts:
+      - prometheus-alertmanager
 
     ## alertmanager Ingress TLS configuration
     ## Secrets must be manually created in the namespace
@@ -586,7 +588,31 @@ alertmanagerFiles:
 ## Prometheus server ConfigMap entries
 ##
 serverFiles:
-  alerts: {}
+  alerts:
+    groups:
+    - name: Available k8s API-server and Nodes
+      rules:
+
+  # Alert for any instance that is unreachable for >5 minutes.
+      - alert: k8s API-server NOT unreachable
+        expr: up{job="kubernetes-apiservers"} == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance {{ $labels.instance }} down"
+          description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."
+
+  # Alert for any Node that is unreachable for >1 minutes.
+      - alert: Node NOT unreachable
+        expr: up{job="kubernetes-nodes"} == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Node {{ $labels.instance }} down"
+          description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."
+
   rules: {}
 
   prometheus.yml:

@@ -361,3 +361,81 @@ helm upgrade --install grafana stable/grafana --set "server.adminPassword=admin"
 #### Смешанные графики
 
 На этом [графике](https://grafana.com/dashboards/741) одновременно используются метрики и шаблоны из cAdvisor, и из kube-state-metrics для отображения сводной информации по деплойментам
+
+--------------------------------------------------------------------------------
+
+## Задание со звездочкой (запустить alertmanager в k8s и настроить правила для контроля за доступностью api-сервера и хостов k8s):
+
+### 1\. Запустим alertmanager в k8s
+
+Внесем изменения в Charts/prometheus/custom_values.yml:
+
+```
+alertmanager:
+  ## If false, alertmanager will not be installed
+  ##
+  enabled: true                    <---
+...
+  ingress:
+    ## If true, alertmanager Ingress will be created
+    ##
+    enabled: true   <-- сможем видеть Alertmanager по адресу http://prometheus-alertmanager (параметр hosts)
+...
+    hosts:
+      - prometheus-alertmanager
+```
+
+Не забудем внести `prometheus-alertmanager` в файл `/etc/hosts`
+
+Обновим релиз prometheus:
+
+- $ `helm upgrade prom ./prometheus -f custom_values.yml --install`
+
+### 2\. Настроим правила для контроля за доступностью api-сервера и хостов k8s
+
+Правила слертинга будем записывать внутри custom_values.yml. Не забываем, что [формат описания правил в Prometheus версии 2.0 изменился на yaml](https://prometheus.io/docs/prometheus/latest/configuration/alerting_rules/)
+
+Внесем изменения в модуль `serverFiles:` в Chart:s/prometheus/custom_values.yml:
+
+```
+serverFiles:
+  alerts: {}
+  rules: {}
+```
+
+> В <http://prometheus-alertmanager> введем метрику UP и найдем интересующие нас job<br>
+> kubernetes-apiservers и kubernetes-nodes
+
+```
+serverFiles:
+  alerts:
+    groups:
+    - name: Available k8s API-server and Nodes
+      rules:
+
+  # Alert for any instance that is unreachable for >5 minutes.
+      - alert: k8s API-server NOT unreachable
+        expr: up{job="kubernetes-apiservers"} == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance {{ $labels.instance }} down"
+          description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."
+
+  # Alert for any Node that is unreachable for >1 minutes.
+      - alert: Node NOT unreachable
+        expr: up{job="kubernetes-nodes"} == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Node {{ $labels.instance }} down"
+          description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."
+
+  rules: {}
+```
+
+Обновим релиз prometheus:
+
+- $ `helm upgrade prom ./prometheus -f custom_values.yml --install`
